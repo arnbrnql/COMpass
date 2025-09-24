@@ -1,0 +1,19 @@
+<h2>Welcome Back to COMpass</h2>
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div>
+    <label for="email">Email</label>
+    <input id="email" type="email" formControlName="email">
+  </div>
+
+  <div>
+    <label for="password">Password</label>
+    <input id="password" type="password" formControlName="password">
+  </div>
+
+  <button type="submit" [disabled]="form.invalid">Log In</button>
+</form>
+
+<p>
+  Don't have an account? <a routerLink="/auth/register">Sign Up</a>
+</p>

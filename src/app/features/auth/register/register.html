@@ -1,0 +1,24 @@
+<h2>Create Your COMpass Account</h2>
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div>
+    <label for="displayName">Display Name</label>
+    <input id="displayName" type="text" formControlName="displayName">
+  </div>
+
+  <div>
+    <label for="email">Email</label>
+    <input id="email" type="email" formControlName="email">
+  </div>
+
+  <div>
+    <label for="password">Password</label>
+    <input id="password" type="password" formControlName="password">
+  </div>
+
+  <button type="submit" [disabled]="form.invalid">Register</button>
+</form>
+
+<p>
+  Already have an account? <a routerLink="/auth/login">Log In</a>
+</p>
