@@ -14,11 +14,13 @@ import { getPerformance, providePerformance } from '@angular/fire/performance';
 import { getStorage, provideStorage } from '@angular/fire/storage';
 import { getVertexAI, provideVertexAI } from '@angular/fire/vertexai';
 
+import { environment } from '../../environments/environment';
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes), provideFirebaseApp(() => initializeApp({ projectId: "compass-cb7cd", appId: "1:349005846258:web:57d95e352e733d540d226b", storageBucket: "compass-cb7cd.firebasestorage.app", apiKey: "AIzaSyDTTVEE3nTZOovMzl-JcXFcBi9dEqzicro", authDomain: "compass-cb7cd.firebaseapp.com", messagingSenderId: "349005846258", measurementId: "G-2YQP19STJP" })), provideAuth(() => getAuth()), provideAnalytics(() => getAnalytics()), ScreenTrackingService, UserTrackingService
+    provideRouter(routes), provideFirebaseApp(() => initializeApp(environment.firebase)), provideAuth(() => getAuth()), provideAnalytics(() => getAnalytics()), ScreenTrackingService, UserTrackingService
     ,provideAppCheck(() => {
       // Use a debug token for development
       if (isDevMode()) {
