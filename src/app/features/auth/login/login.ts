@@ -28,8 +28,7 @@ export class Login {
 
     try {
       await this.authService.login(this.form.getRawValue());
-      // TODO: Navigate to dashboard
-      this.router.navigate(['/']);
+      this.router.navigate(['/dashboard']);
     } catch (e) {
       console.error(e);
       // TODO: Show an error message to the user

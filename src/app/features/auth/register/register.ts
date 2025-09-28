@@ -29,8 +29,7 @@ export class Register {
 
     try {
       await this.authService.register(this.form.getRawValue());
-      // TODO: We will navigate to the dashboard later
-      this.router.navigate(['/']);
+      this.router.navigate(['/dashboard']);
     } catch (e) {
       console.error(e);
       // TODO: Show an error message to the user
