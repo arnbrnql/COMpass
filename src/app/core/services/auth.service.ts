@@ -1,9 +1,11 @@
-import { Injectable, signal, inject } from '@angular/core';
-import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, User as FirebaseUser } from '@angular/fire/auth';
+import { Injectable, signal, inject, effect } from '@angular/core';
+import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, authState, User as FirebaseUser } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import { UserService } from './user.service';
 import { User } from '../../shared/models/user.model';
 import { LoginPayload, RegisterPayload } from '../../shared/models/auth.model';
+import { from, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -15,20 +17,25 @@ export class AuthService {
 
   // The signal that holds the current user state for the entire app
   currentUser = signal<User | null>(null);
+  private user$ = authState(this.auth);
 
   constructor() {
     // Listen to Firebase's auth state changes
-    onAuthStateChanged(this.auth, async (firebaseUser: FirebaseUser | null) => {
-      if (firebaseUser) {
-        const user: User = {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          displayName: firebaseUser.displayName
-        };
-        this.currentUser.set(user);
-      } else {
-        this.currentUser.set(null);
-      }
+    this.user$.pipe(
+      switchMap((firebaseUser: FirebaseUser | null) => {
+        if (firebaseUser) {
+          const user: User = {
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            displayName: firebaseUser.displayName
+          };
+          return of(user);
+        } else {
+          return of(null);
+        }
+      })
+    ).subscribe((user) => {
+      this.currentUser.set(user);
     });
   }
 

@@ -1,12 +1,17 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/guards/auth-guard';
 
 export const routes: Routes = [
-  // Redirect root to the auth page for now
   { path: '', redirectTo: 'auth', pathMatch: 'full' },
-  // Lazy load the auth routes
   {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES)
+  },
+  // Add this new protected route:
+  {
+    path: 'dashboard',
+    // The canActivate property uses our guard
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/dashboard/dashboard/dashboard').then(m => m.Dashboard)
   }
-  // We will add our guarded dashboard route here later!
 ];

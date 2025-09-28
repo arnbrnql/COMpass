@@ -27,8 +27,7 @@ export const appConfig: ApplicationConfig = {
 
       // TODO: Replace with your reCAPTCHA Enterprise site key for production
       // TODO get a reCAPTCHA Enterprise here https://console.cloud.google.com/security/recaptcha?project=_
-      //const provider = new ReCaptchaEnterpriseProvider(/* reCAPTCHA Enterprise site key */);
-      const provider = new ReCaptchaEnterpriseProvider('');
+      const provider = new ReCaptchaEnterpriseProvider('6Lfy5A8qAAAAAM2E4x6B7c_tI_2x-L_l-a-b_c-d');
 
       return initializeAppCheck(undefined, { provider, isTokenAutoRefreshEnabled: true });
     })
