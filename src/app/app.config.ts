@@ -14,7 +14,7 @@ import { getPerformance, providePerformance } from '@angular/fire/performance';
 import { getStorage, provideStorage } from '@angular/fire/storage';
 import { getVertexAI, provideVertexAI } from '@angular/fire/vertexai';
 
-import { environment } from '../../environments/environment';
+import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
   providers: [
