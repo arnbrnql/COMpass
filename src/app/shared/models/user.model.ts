@@ -1,7 +1,15 @@
+export type UserRole = 'mentor' | 'mentee' | 'both' | 'admin';
+
 export interface User {
   uid: string;
   email: string | null;
-  displayName?: string | null; // Optional for now
-  role?: 'mentor' | 'mentee' | 'both';
-  // add na lang tayo ng more profile fields here in Phase 2
+  displayName?: string | null;
+  photoUrl?: string | null;
+  role?: UserRole;
+
+  bio?: string;
+  location?: string;
+  skills?: string[];
+  interests?: string[];
+  goals?: string;
 }

@@ -1,20 +1,23 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { LoginPayload } from '../../../shared/models/auth.model';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login.html',
-  styleUrl: './login.scss'
+  styleUrl: './login.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Login {
+export class LoginComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+
+  isLoading = signal(false);
+  errorMessage = signal<string | null>(null);
 
   form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -23,15 +26,21 @@ export class Login {
 
   async onSubmit() {
     if (this.form.invalid) {
+      this.errorMessage.set('Please fill in all required fields correctly.');
       return;
     }
+
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
 
     try {
       await this.authService.login(this.form.getRawValue());
       this.router.navigate(['/dashboard']);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      // TODO: Show an error message to the user
+      this.errorMessage.set(e.message);
+    } finally {
+      this.isLoading.set(false);
     }
   }
 }

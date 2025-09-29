@@ -1,20 +1,24 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { RegisterPayload } from '../../../shared/models/auth.model';
 
 @Component({
   selector: 'app-register',
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './register.html',
-  styleUrl: './register.scss'
+  styleUrl: './register.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class Register {
+export class RegisterComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+
+  // Signals for managing component state
+  isLoading = signal(false);
+  errorMessage = signal<string | null>(null);
 
   form = this.fb.nonNullable.group({
     displayName: ['', Validators.required],
@@ -24,16 +28,21 @@ export class Register {
 
   async onSubmit() {
     if (this.form.invalid) {
+      this.errorMessage.set('Please ensure all fields are filled out correctly.');
       return;
     }
+
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
 
     try {
       await this.authService.register(this.form.getRawValue());
       this.router.navigate(['/dashboard']);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      // TODO: Show an error message to the user
+      this.errorMessage.set(e.message);
+    } finally {
+      this.isLoading.set(false);
     }
   }
-
 }

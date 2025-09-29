@@ -1,65 +1,58 @@
-import { Injectable, signal, inject, effect } from '@angular/core';
-import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, authState, User as FirebaseUser } from '@angular/fire/auth';
+import { Injectable, inject } from '@angular/core';
+import {
+  Auth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  authState,
+} from '@angular/fire/auth';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { UserService } from './user.service';
 import { User } from '../../shared/models/user.model';
 import { LoginPayload, RegisterPayload } from '../../shared/models/auth.model';
-import { from, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private auth: Auth = inject(Auth);
   private router: Router = inject(Router);
   private userService: UserService = inject(UserService);
 
-  // The signal that holds the current user state for the entire app
-  currentUser = signal<User | null>(null);
+  // Directly convert the Firebase auth state observable to a signal.
+  // This signal will automatically update when the user logs in or out.
   private user$ = authState(this.auth);
-
-  constructor() {
-    // Listen to Firebase's auth state changes
-    this.user$.pipe(
-      switchMap((firebaseUser: FirebaseUser | null) => {
-        if (firebaseUser) {
-          const user: User = {
-            uid: firebaseUser.uid,
-            email: firebaseUser.email,
-            displayName: firebaseUser.displayName
-          };
-          return of(user);
-        } else {
-          return of(null);
-        }
-      })
-    ).subscribe((user) => {
-      this.currentUser.set(user);
-    });
-  }
+  currentUser = toSignal(this.user$);
 
   async login(payload: LoginPayload) {
-    const userCredential = await signInWithEmailAndPassword(this.auth, payload.email, payload.password);
+    const userCredential = await signInWithEmailAndPassword(
+      this.auth,
+      payload.email,
+      payload.password
+    );
     return userCredential;
   }
 
-
   async register(payload: RegisterPayload) {
+    const userCredential = await createUserWithEmailAndPassword(
+      this.auth,
+      payload.email,
+      payload.password
+    );
 
-    const userCredential = await createUserWithEmailAndPassword(this.auth, payload.email, payload.password);
     const user: User = {
       uid: userCredential.user.uid,
       email: userCredential.user.email,
-      displayName: payload.displayName
+      displayName: payload.displayName,
     };
-    // Create the user profile document in Firestore
+
     await this.userService.createUserProfile(user);
     return userCredential;
   }
 
   logout() {
     signOut(this.auth);
-    this.router.navigate(['/']); // Redirect to home/login on logout
+    this.router.navigate(['/']);
   }
 }
