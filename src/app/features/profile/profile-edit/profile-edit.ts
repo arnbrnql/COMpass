@@ -1,69 +1,95 @@
-import { Component, Signal, effect, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { FormBuilder, ReactiveFormsModule, Validators, FormArray, FormControl } from '@angular/forms';
-import { User } from '../../../shared/models/user.model';
-import { AuthService } from '../../../core/services/auth.service';
+import {
+  Component,
+  inject,
+  ChangeDetectionStrategy,
+  signal,
+  effect,
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UserService } from '../../../core/services/user.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { User } from '../../../shared/models/user.model';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-profile-edit',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './profile-edit.html',
-  styleUrl: './profile-edit.scss'
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileEdit {
   private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
   private userService = inject(UserService);
+  private authService = inject(AuthService);
 
-  currentUser: Signal<User | null> = this.authService.currentUser;
-  userProfile: Signal<User | undefined> = toSignal(
-    this.userService.getUserProfile(this.currentUser()!.uid)
-  );
+  isLoading = signal(false);
+  statusMessage = signal<string | null>(null);
+  currentUser = this.authService.currentUser;
 
-  profileForm = this.fb.group({
-    displayName: [''],
+  profileForm = this.fb.nonNullable.group({
+    displayName: ['', Validators.required],
     bio: [''],
     location: [''],
-    skills: this.fb.array<string>([])
+    skills: [''],
+    interests: [''],
+    goals: [''],
   });
 
   constructor() {
-    effect(() => {
-      const profile = this.userProfile();
-      if (profile) {
-        this.skills.clear();
-        if (profile.skills) {
-          profile.skills.forEach(skill => this.skills.push(this.fb.control(skill)));
+    effect(async () => {
+      const user = this.currentUser();
+      if (user) {
+        const profile = await firstValueFrom(
+          this.userService.getUserProfile(user.uid)
+        );
+        if (profile) {
+          this.profileForm.patchValue({
+            displayName: profile.displayName || '',
+            bio: profile.bio || '',
+            location: profile.location || '',
+            goals: profile.goals || '',
+            skills: profile.skills?.join(', ') || '',
+            interests: profile.interests?.join(', ') || '',
+          });
         }
-        this.profileForm.patchValue(profile);
       }
     });
   }
 
-  get skills() {
-    return this.profileForm.get('skills') as FormArray;
-  }
-
-  addSkill() {
-    this.skills.push(this.fb.control<string>(''));
-  }
-
-  removeSkill(index: number) {
-    this.skills.removeAt(index);
-  }
-
   async onSubmit() {
-    if (!this.currentUser()) return;
+    if (this.profileForm.invalid || !this.currentUser()) {
+      this.statusMessage.set('Please fill out all required fields.');
+      return;
+    }
 
-    const formData = this.profileForm.value as Partial<User>;
+    this.isLoading.set(true);
+    this.statusMessage.set(null);
+
+    const formValue = this.profileForm.getRawValue();
+
+    const profileData: Partial<User> = {
+      ...formValue,
+      skills: formValue.skills
+        .split(',')
+        .map((s) => s.trim())
+        .filter((s) => s),
+      interests: formValue.interests
+        .split(',')
+        .map((s) => s.trim())
+        .filter((s) => s),
+    };
+
     try {
-      await this.userService.updateUserProfile(this.currentUser()!.uid, formData);
-      alert('Profile updated successfully!');
-    } catch (error) {
-      console.error('Error updating profile', error);
-      alert('Failed to update profile.');
+      await firstValueFrom(
+        this.userService.updateUserProfile(this.currentUser()!.uid, profileData)
+      );
+      this.statusMessage.set('Profile updated successfully!');
+    } catch (e: any) {
+      this.statusMessage.set(`Error: ${e.message}`);
+    } finally {
+      this.isLoading.set(false);
     }
   }
 }
