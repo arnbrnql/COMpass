@@ -1,3 +1,5 @@
 @if (authService.currentUser()) {
   <button (click)="authService.logout()">Logout</button>
 }
+
+<app-profile-edit></app-profile-edit>

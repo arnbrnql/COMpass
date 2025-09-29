@@ -1,7 +1,18 @@
 export interface User {
   uid: string;
   email: string | null;
-  displayName?: string | null; // Optional for now
+  displayName?: string | null;
+  photoUrl?: string | null;
+
+  // New Profile Fields
   role?: 'mentor' | 'mentee' | 'both';
-  // add na lang tayo ng more profile fields here in Phase 2
+  bio?: string | null;
+  location?: string | null;
+  skills?: string[]; // An array of strings
+  expertise?: string[];
+  interests?: string[];
+  goals?: string[];
+  // define na lang later ng more specific type for availability later
+  availability?: string | null;
+  preferredLanguage?: string | null;
 }

@@ -1,0 +1,37 @@
+<div class="profile-container">
+  <h2>Edit Your Profile</h2>
+
+  <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+
+    <div>
+      <label for="displayName">Display Name</label>
+      <input id="displayName" type="text" formControlName="displayName">
+    </div>
+
+    <div>
+      <label for="bio">Bio</label>
+      <textarea id="bio" formControlName="bio" rows="4"></textarea>
+    </div>
+
+    <div>
+      <label for="location">Location</label>
+      <input id="location" type="text" formControlName="location">
+    </div>
+
+    <div class="skills-section">
+      <label>Skills</label>
+
+      <div formArrayName="skills">
+        @for (skill of skills.controls; track $index) {
+          <div class="skill-input">
+            <input type="text" [formControlName]="$index">
+            <button type="button" (click)="removeSkill($index)">Remove</button>
+          </div>
+        }
+      </div>
+
+      <button type="button" (click)="addSkill()">+ Add Skill</button>
+    </div>
+      <button type="submit" [disabled]="profileForm.pristine">Save Changes</button>
+  </form>
+</div>
