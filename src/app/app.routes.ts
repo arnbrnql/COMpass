@@ -13,11 +13,6 @@ export const routes: Routes = [
     path: 'dashboard',
     // The canActivate property uses our guard
     canActivate: [authGuard],
-    loadComponent: () => import('./features/dashboard/dashboard/dashboard').then(m => m.Dashboard)
-  },
-  {
-    path: 'profile',
-    canActivate: [authGuard],
-    loadChildren: () => import('./features/profile/profile.routes').then(m => m.PROFILE_ROUTES)
+    loadComponent: () => import('./features/dashboard/dashboard/dashboard').then(m => m.default)
   }
 ];
