@@ -14,5 +14,11 @@ export const routes: Routes = [
     // The canActivate property uses our guard
     canActivate: [authGuard],
     loadComponent: () => import('./features/dashboard/dashboard/dashboard').then(m => m.default)
-  }
+  },
+  // Add this block for the mentors feature
+  {
+    path: 'discover-mentors',
+    loadComponent: () => import('./features/mentors/discover/discover'),
+    canActivate: [authGuard],
+  },
 ];
