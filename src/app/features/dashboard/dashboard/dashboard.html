@@ -1,5 +1,9 @@
-@if (authService.currentUser()) {
-  <button (click)="authService.logout()">Logout</button>
+@if (roleService.activeRole() === 'mentor') {
+  <app-mentor-dashboard />
+} @else if (roleService.activeRole() === 'mentee') {
+  <app-mentee-dashboard />
+} @else {
+  <div class="p-8">
+    <span class="loading loading-dots loading-lg"></span>
+  </div>
 }
-
-<app-profile-edit></app-profile-edit>

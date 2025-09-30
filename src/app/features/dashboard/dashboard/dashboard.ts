@@ -1,15 +1,15 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { AuthService } from '../../../core/services/auth.service';
-import { ProfileEdit } from '../../profile/profile-edit/profile-edit';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { RoleService } from '../../../core/services/role.service';
+import MentorDashboard from '../mentor-dashboard/mentor-dashboard/mentor-dashboard';
+import MenteeDashboard from '../mentee-dashboard/mentee-dashboard/mentee-dashboard';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, ProfileEdit],
+  standalone: true,
+  imports: [MentorDashboard, MenteeDashboard],
   templateUrl: './dashboard.html',
-  styleUrl: './dashboard.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Dashboard {
-  authService = inject(AuthService);
+export default class Dashboard {
+  roleService = inject(RoleService);
 }

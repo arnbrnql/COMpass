@@ -1,24 +1,89 @@
-<h2>Create Your COMpass Account</h2>
+<div class="flex items-center justify-center min-h-screen bg-base-200">
+  <div class="card w-full max-w-md bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title justify-center text-2xl font-bold">Create Account</h2>
 
-<form [formGroup]="form" (ngSubmit)="onSubmit()">
-  <div>
-    <label for="displayName">Display Name</label>
-    <input id="displayName" type="text" formControlName="displayName">
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-4">
+        <div>
+          <label class="label">
+            <span class="label-text">Full Name</span>
+          </label>
+          <input
+            type="text"
+            formControlName="displayName"
+            placeholder="Enter your full name"
+            class="input input-bordered w-full"
+            [class.input-error]="registerForm.get('displayName')?.invalid && registerForm.get('displayName')?.touched"
+          />
+        </div>
+
+        <div>
+          <label class="label">
+            <span class="label-text">Email</span>
+          </label>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="Enter your email"
+            class="input input-bordered w-full"
+            [class.input-error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+          />
+        </div>
+
+        <div>
+          <label class="label">
+            <span class="label-text">Password</span>
+          </label>
+          <input
+            type="password"
+            formControlName="password"
+            placeholder="Create a password"
+            class="input input-bordered w-full"
+            [class.input-error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+          />
+        </div>
+
+        <div>
+          <label class="label">
+            <span class="label-text">I want to...</span>
+          </label>
+          <div class="flex flex-col space-y-2">
+            <label class="flex items-center p-2 rounded-lg border border-base-300 cursor-pointer hover:bg-base-200">
+              <input type="radio" formControlName="role" value="mentee" class="radio radio-primary" />
+              <span class="ml-2">Find a Mentor</span>
+            </label>
+            <label class="flex items-center p-2 rounded-lg border border-base-300 cursor-pointer hover:bg-base-200">
+              <input type="radio" formControlName="role" value="mentor" class="radio radio-primary" />
+              <span class="ml-2">Become a Mentor</span>
+            </label>
+            <label class="flex items-center p-2 rounded-lg border border-base-300 cursor-pointer hover:bg-base-200">
+              <input type="radio" formControlName="role" value="both" class="radio radio-primary" />
+              <span class="ml-2">Both</span>
+            </label>
+          </div>
+        </div>
+
+        @if (errorMessage()) {
+          <div class="alert alert-error text-sm">
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+
+        <div class="card-actions justify-center">
+          <button type="submit" class="btn btn-primary w-full" [disabled]="isLoading()">
+            @if (isLoading()) {
+              <span class="loading loading-spinner"></span>
+            }
+            Create Account
+          </button>
+        </div>
+      </form>
+
+      <div class="divider">Already have an account?</div>
+
+      <a routerLink="/auth/login" class="btn btn-outline w-full">
+        Log In
+      </a>
+    </div>
   </div>
-
-  <div>
-    <label for="email">Email</label>
-    <input id="email" type="email" formControlName="email">
-  </div>
-
-  <div>
-    <label for="password">Password</label>
-    <input id="password" type="password" formControlName="password">
-  </div>
-
-  <button type="submit" [disabled]="form.invalid">Register</button>
-</form>
-
-<p>
-  Already have an account? <a routerLink="/auth/login">Log In</a>
-</p>
+</div>

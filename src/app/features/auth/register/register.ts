@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectionStrategy, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -8,39 +8,39 @@ import { AuthService } from '../../../core/services/auth.service';
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './register.html',
-  styleUrl: './register.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RegisterComponent {
-  private fb = inject(FormBuilder);
+export default class Register {
+  private formBuilder = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
 
-  // Signals for managing component state
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
 
-  form = this.fb.nonNullable.group({
-    displayName: ['', Validators.required],
+  registerForm = this.formBuilder.group({
+    displayName: ['', [Validators.required, Validators.minLength(3)]],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
+    role: ['mentee', Validators.required], // Default to 'mentee'
   });
 
   async onSubmit() {
-    if (this.form.invalid) {
-      this.errorMessage.set('Please ensure all fields are filled out correctly.');
+    if (this.registerForm.invalid) {
+      this.registerForm.markAllAsTouched();
       return;
     }
 
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
+    const { displayName, email, password, role } = this.registerForm.getRawValue();
+
     try {
-      await this.authService.register(this.form.getRawValue());
-      this.router.navigate(['/dashboard']);
-    } catch (e: any) {
-      console.error(e);
-      this.errorMessage.set(e.message);
+      await this.authService.register(displayName!, email!, password!, role!);
+      await this.router.navigate(['/']);
+    } catch (error: any) {
+      this.errorMessage.set(error.message || 'An unexpected error occurred.');
     } finally {
       this.isLoading.set(false);
     }
