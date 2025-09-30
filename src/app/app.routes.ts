@@ -21,4 +21,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/mentors/discover/discover'),
     canActivate: [authGuard],
   },
+  // Add this block for the mentor profile page
+  {
+    path: 'mentors/:id',
+    loadComponent: () => import('./features/mentors/mentor-profile/mentor-profile'),
+    canActivate: [authGuard],
+  },
 ];
