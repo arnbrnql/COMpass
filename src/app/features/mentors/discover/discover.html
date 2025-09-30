@@ -1,0 +1,15 @@
+<div class="container mx-auto p-8">
+  <h1 class="text-4xl font-bold mb-8">Discover Mentors</h1>
+
+  @if (mentors().length > 0) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+      @for (mentor of mentors(); track mentor.uid) {
+        <app-mentor-card [mentor]="mentor" />
+      }
+    </div>
+  } @else {
+    <div class="text-center py-16">
+      <p class="text-xl">No mentors are available at the moment. Please check back later.</p>
+    </div>
+  }
+</div>

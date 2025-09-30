@@ -1,0 +1,16 @@
+<div class="card bg-base-100 shadow-xl">
+  <figure class="px-10 pt-10">
+    <div class="avatar">
+      <div class="w-24 rounded-full">
+        <img [src]="mentor().photoURL || 'assets/images/default-avatar.png'" alt="Mentor Avatar" />
+      </div>
+    </div>
+  </figure>
+  <div class="card-body items-center text-center">
+    <h2 class="card-title">{{ mentor().displayName }}</h2>
+    <p class="line-clamp-3">{{ mentor().bio || 'No bio provided.' }}</p>
+    <div class="card-actions mt-4">
+      <a [routerLink]="['/mentors', mentor().uid]" class="btn btn-primary">View Profile</a>
+    </div>
+  </div>
+</div>
