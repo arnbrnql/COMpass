@@ -7,7 +7,7 @@ import {
   updateDoc,
 } from '@angular/fire/firestore';
 import { User } from '../../shared/models/user.model';
-import { from, Observable } from 'rxjs';
+import { Observable, from } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -15,18 +15,23 @@ import { from, Observable } from 'rxjs';
 export class UserService {
   private firestore: Firestore = inject(Firestore);
 
-  getUserProfile(uid: string): Observable<User> {
-    const userDocRef = doc(this.firestore, 'users', uid);
-    return docData(userDocRef) as Observable<User>;
+  getUserProfile(uid: string | undefined): Observable<User | null> {
+    if (!uid) {
+      return new Observable((subscriber) => subscriber.next(null));
+    }
+    const userDocRef = doc(this.firestore, `users/${uid}`);
+    return docData(userDocRef) as Observable<User | null>;
   }
 
-  createUserProfile(user: User) {
-    const userDocRef = doc(this.firestore, 'users', user.uid);
-    return from(setDoc(userDocRef, { ...user }));
+  addUser(user: User): Observable<void> {
+    const userDocRef = doc(this.firestore, `users/${user.uid}`);
+    return from(setDoc(userDocRef, user));
   }
 
-  updateUserProfile(uid: string, data: Partial<User>) {
-    const userDocRef = doc(this.firestore, 'users', uid);
+  updateUserProfile(uid: string, data: Partial<User>): Observable<void> {
+    const userDocRef = doc(this.firestore, `users/${uid}`);
     return from(updateDoc(userDocRef, data));
   }
 }
+
+

@@ -1,58 +1,77 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import {
   Auth,
-  signInWithEmailAndPassword,
+  User,
+  UserCredential,
   createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   signOut,
-  authState,
+  updateProfile,
+  onAuthStateChanged,
 } from '@angular/fire/auth';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
+import { Observable, from, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+import { toSignal } from '@angular/core/rxjs-interop';
+
+import { LoginPayload } from '../../shared/models/auth.model';
 import { UserService } from './user.service';
-import { User } from '../../shared/models/user.model';
-import { LoginPayload, RegisterPayload } from '../../shared/models/auth.model';
+import { User as AppUser } from '../../shared/models/user.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private auth: Auth = inject(Auth);
-  private router: Router = inject(Router);
-  private userService: UserService = inject(UserService);
+  private router = inject(Router);
+  private userService = inject(UserService);
 
-  // Directly convert the Firebase auth state observable to a signal.
-  // This signal will automatically update when the user logs in or out.
-  private user$ = authState(this.auth);
+  private user$ = new Observable<User | null>((subscriber) =>
+    onAuthStateChanged(this.auth, subscriber)
+  ).pipe(
+    switchMap((user) => {
+      if (!user) return of(null);
+      return of(user);
+    })
+  );
+
   currentUser = toSignal(this.user$);
+  isAuthenticated = toSignal(this.user$.pipe(switchMap((user) => of(!!user))));
 
-  async login(payload: LoginPayload) {
-    const userCredential = await signInWithEmailAndPassword(
-      this.auth,
-      payload.email,
-      payload.password
-    );
-    return userCredential;
+  constructor() {
+    console.log('AuthService initialized');
   }
 
-  async register(payload: RegisterPayload) {
-    const userCredential = await createUserWithEmailAndPassword(
-      this.auth,
-      payload.email,
-      payload.password
-    );
+  login(credentials: LoginPayload): Observable<UserCredential> {
+    return from(signInWithEmailAndPassword(this.auth, credentials.email, credentials.password));
+  }
 
-    const user: User = {
-      uid: userCredential.user.uid,
-      email: userCredential.user.email,
-      displayName: payload.displayName,
+  async register(displayName: string, email: string, password: string, role: string): Promise<void> {
+    const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
+
+    await updateProfile(userCredential.user, { displayName });
+
+    const roleFlags = {
+      isMentor: role === 'mentor' || role === 'both',
+      isMentee: role === 'mentee' || role === 'both',
     };
 
-    await this.userService.createUserProfile(user);
-    return userCredential;
+    const newUser: AppUser = {
+      uid: userCredential.user.uid,
+      email: userCredential.user.email!,
+      displayName: userCredential.user.displayName!,
+      photoURL: userCredential.user.photoURL || '',
+      roleFlags,
+    };
+
+    await this.userService.addUser(newUser);
   }
 
-  logout() {
-    signOut(this.auth);
-    this.router.navigate(['/']);
+  logout(): Observable<void> {
+    return from(signOut(this.auth)).pipe(
+      switchMap(async () => {
+        await this.router.navigate(['/auth/login']);
+      })
+    );
   }
 }

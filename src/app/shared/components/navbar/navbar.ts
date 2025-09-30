@@ -1,11 +1,25 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
+import { RoleService } from '../../../core/services/role.service';
 
 @Component({
   selector: 'app-navbar',
-  imports: [],
+  standalone: true,
+  imports: [RouterLink],
   templateUrl: './navbar.html',
-  styleUrl: './navbar.scss'
+  styleUrl: './navbar.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Navbar {
+export default class Navbar {
+  authService = inject(AuthService);
+  roleService = inject(RoleService);
 
+  logout() {
+    this.authService.logout();
+  }
+
+  setRole(role: 'mentor' | 'mentee') {
+    this.roleService.setActiveRole(role);
+  }
 }
