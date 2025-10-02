@@ -5,10 +5,10 @@ import {
   query,
   where,
   getDocs,
+  collectionData,
 } from '@angular/fire/firestore';
 import { User } from '../../shared/models/user.model';
-import { Observable, from } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -23,14 +23,6 @@ export class MentorService {
       where('roleFlags.isMentor', '==', true)
     );
 
-    return from(getDocs(mentorsQuery)).pipe(
-      map((querySnapshot) => {
-        const mentors: User[] = [];
-        querySnapshot.forEach((doc) => {
-          mentors.push(doc.data() as User);
-        });
-        return mentors;
-      })
-    );
+    return collectionData(mentorsQuery, { idField: 'uid' }) as Observable<User[]>;
   }
 }
