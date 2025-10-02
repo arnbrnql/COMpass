@@ -20,7 +20,9 @@ export default class MentorProfile {
   private mentor$: Observable<User | null> = this.route.params.pipe(
     switchMap(params => {
       const id = params['id'] as string;
-      if (!id) return of(null);
+      if (!id) {
+        return of(null);
+      }
       return this.userService.getUserProfile(id);
     })
   );
@@ -33,7 +35,9 @@ export default class MentorProfile {
   // In a real implementation, this would be: `https://cal.com/${this.mentor()?.calUsername}`
   getCalComUrl(): SafeResourceUrl | null {
     const mentor = this.mentor();
-    if (!mentor) return null;
+    if (!mentor) {
+      return null;
+    }
 
     // Placeholder URL for the MVP.
     const url = `https://cal.com/team/compass-app/mentorship-session`;
