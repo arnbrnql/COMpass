@@ -1,13 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
-import { RegisterPayload } from '../../../shared/models/auth.model';
 
 @Component({
   selector: 'app-register',
-  standalone: true,
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './register.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -27,7 +24,7 @@ export class Register {
     role: ['mentee', Validators.required], // Default to 'mentee'
   });
 
-  onSubmit() {
+  async onSubmit() {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
       return;
@@ -36,17 +33,21 @@ export class Register {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    this.authService
-      .register(this.registerForm.getRawValue() as RegisterPayload)
-      .pipe(finalize(() => this.isLoading.set(false)))
-      .subscribe({
-        next: () => {
-          this.router.navigate(['/']);
-        },
-        error: (error: any) => {
-          this.errorMessage.set(this.getFriendlyErrorMessage(error.code));
-        },
-      });
+    const formValue = this.registerForm.getRawValue();
+
+    try {
+      await this.authService.register(
+        formValue.displayName!,
+        formValue.email!,
+        formValue.password!,
+        formValue.role!
+      );
+      this.router.navigate(['/']);
+    } catch (error: any) {
+      this.errorMessage.set(this.getFriendlyErrorMessage(error.code));
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 
   private getFriendlyErrorMessage(errorCode: string): string {

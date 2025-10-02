@@ -7,15 +7,12 @@ import { AuthService } from './auth.service';
 export class RoleService {
   private authService = inject(AuthService);
 
-  // Get the full user profile from the AuthService signal
-  private readonly currentUserProfile = this.authService.currentUserProfile;
-
   // The currently active role ('mentor' or 'mentee')
   activeRole = signal<'mentor' | 'mentee' | null>(null);
 
-  // Available roles based on the user's profile flags
+  // Available roles now come directly from the AuthService's profile signal
   availableRoles = computed(() => {
-    const profile = this.currentUserProfile();
+    const profile = this.authService.currentUserProfile();
     if (!profile) {
       return { isMentor: false, isMentee: false };
     }
