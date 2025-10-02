@@ -16,7 +16,7 @@ export default class Navbar {
   roleService = inject(RoleService);
 
   logout() {
-    this.authService.logout();
+    this.authService.logout().subscribe();
   }
 
   setRole(role: 'mentor' | 'mentee') {

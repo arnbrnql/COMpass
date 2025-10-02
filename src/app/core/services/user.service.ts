@@ -7,7 +7,7 @@ import {
   updateDoc,
 } from '@angular/fire/firestore';
 import { User } from '../../shared/models/user.model';
-import { Observable, from } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -17,21 +17,19 @@ export class UserService {
 
   getUserProfile(uid: string | undefined): Observable<User | null> {
     if (!uid) {
-      return new Observable((subscriber) => subscriber.next(null));
+      return of(null);
     }
     const userDocRef = doc(this.firestore, `users/${uid}`);
     return docData(userDocRef) as Observable<User | null>;
   }
 
-  addUser(user: User): Observable<void> {
+  addUser(user: User): Promise<void> {
     const userDocRef = doc(this.firestore, `users/${user.uid}`);
-    return from(setDoc(userDocRef, user));
+    return setDoc(userDocRef, user);
   }
 
-  updateUserProfile(uid: string, data: Partial<User>): Observable<void> {
+  updateUserProfile(uid: string, data: Partial<User>): Promise<void> {
     const userDocRef = doc(this.firestore, `users/${uid}`);
-    return from(updateDoc(userDocRef, data));
+    return updateDoc(userDocRef, data);
   }
 }
-
-

@@ -1,6 +1,7 @@
 import { Component, inject, ChangeDetectionStrategy, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { finalize } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -11,7 +12,7 @@ import { AuthService } from '../../../core/services/auth.service';
   styleUrl: './login.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LoginComponent {
+export class Login {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -24,23 +25,38 @@ export class LoginComponent {
     password: ['', [Validators.required]],
   });
 
-  async onSubmit() {
+  onSubmit() {
     if (this.form.invalid) {
-      this.errorMessage.set('Please fill in all required fields correctly.');
+      this.form.markAllAsTouched();
       return;
     }
 
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    try {
-      await this.authService.login(this.form.getRawValue());
-      this.router.navigate(['/dashboard']);
-    } catch (e: any) {
-      console.error(e);
-      this.errorMessage.set(e.message);
-    } finally {
-      this.isLoading.set(false);
+    this.authService
+      .login(this.form.getRawValue())
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: () => {
+          this.router.navigate(['/dashboard']);
+        },
+        error: (e: any) => {
+          this.errorMessage.set(this.getFriendlyErrorMessage(e.code));
+        },
+      });
+  }
+
+  private getFriendlyErrorMessage(errorCode: string): string {
+    switch (errorCode) {
+      case 'auth/invalid-email':
+        return 'The email address is not valid.';
+      case 'auth/user-not-found':
+      case 'auth/wrong-password':
+      case 'auth/invalid-credential':
+        return 'Invalid email or password. Please try again.';
+      default:
+        return 'An unexpected error occurred during login.';
     }
   }
 }

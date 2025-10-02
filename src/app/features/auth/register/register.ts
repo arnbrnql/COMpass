@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { finalize } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
+import { RegisterPayload } from '../../../shared/models/auth.model';
 
 @Component({
   selector: 'app-register',
@@ -10,7 +12,7 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './register.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class Register {
+export class Register {
   private formBuilder = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -25,7 +27,7 @@ export default class Register {
     role: ['mentee', Validators.required], // Default to 'mentee'
   });
 
-  async onSubmit() {
+  onSubmit() {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
       return;
@@ -34,15 +36,29 @@ export default class Register {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    const { displayName, email, password, role } = this.registerForm.getRawValue();
+    this.authService
+      .register(this.registerForm.getRawValue() as RegisterPayload)
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: () => {
+          this.router.navigate(['/']);
+        },
+        error: (error: any) => {
+          this.errorMessage.set(this.getFriendlyErrorMessage(error.code));
+        },
+      });
+  }
 
-    try {
-      await this.authService.register(displayName!, email!, password!, role!);
-      await this.router.navigate(['/']);
-    } catch (error: any) {
-      this.errorMessage.set(error.message || 'An unexpected error occurred.');
-    } finally {
-      this.isLoading.set(false);
+  private getFriendlyErrorMessage(errorCode: string): string {
+    switch (errorCode) {
+      case 'auth/email-already-in-use':
+        return 'This email address is already in use by another account.';
+      case 'auth/invalid-email':
+        return 'The email address is not valid.';
+      case 'auth/weak-password':
+        return 'The password is too weak. It must be at least 6 characters long.';
+      default:
+        return 'An unexpected error occurred during registration.';
     }
   }
 }

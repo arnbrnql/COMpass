@@ -1,7 +1,4 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { User } from '../../shared/models/user.model';
-import { UserService } from './user.service';
 import { AuthService } from './auth.service';
 
 @Injectable({
@@ -9,10 +6,9 @@ import { AuthService } from './auth.service';
 })
 export class RoleService {
   private authService = inject(AuthService);
-  private userService = inject(UserService);
 
-  // Get the full user profile from Firestore
-  private currentUserProfile = toSignal(this.userService.getUserProfile(this.authService.currentUser()?.uid));
+  // Get the full user profile from the AuthService signal
+  private readonly currentUserProfile = this.authService.currentUserProfile;
 
   // The currently active role ('mentor' or 'mentee')
   activeRole = signal<'mentor' | 'mentee' | null>(null);
@@ -20,7 +16,9 @@ export class RoleService {
   // Available roles based on the user's profile flags
   availableRoles = computed(() => {
     const profile = this.currentUserProfile();
-    if (!profile) return { isMentor: false, isMentee: false };
+    if (!profile) {
+      return { isMentor: false, isMentee: false };
+    }
     return profile.roleFlags;
   });
 

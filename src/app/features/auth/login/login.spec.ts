@@ -4,7 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Auth } from '@angular/fire/auth';
 import { Firestore } from '@angular/fire/firestore';
 
-import { LoginComponent } from './login';
+import { Login } from './login';
 
 // Mock Firebase Auth
 const mockAuth = {
@@ -37,13 +37,13 @@ const mockActivatedRoute = {
   params: jasmine.createSpy('params')
 };
 
-describe('LoginComponent', () => {
-  let component: LoginComponent;
-  let fixture: ComponentFixture<LoginComponent>;
+describe('Login', () => {
+  let component: Login;
+  let fixture: ComponentFixture<Login>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LoginComponent, ReactiveFormsModule],
+      imports: [Login, ReactiveFormsModule],
       providers: [
         { provide: Auth, useValue: mockAuth },
         { provide: Firestore, useValue: mockFirestore },
@@ -53,7 +53,7 @@ describe('LoginComponent', () => {
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(LoginComponent);
+    fixture = TestBed.createComponent(Login);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
