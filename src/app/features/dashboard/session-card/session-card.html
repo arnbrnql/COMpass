@@ -1,0 +1,19 @@
+<div class="card bg-base-100 shadow-md mb-4">
+  <div class="card-body">
+    <div class="flex justify-between items-center">
+      <div>
+        <h2 class="card-title">Session with [Mentor Name]</h2>
+        <p>{{ session().startTime | date:'fullDate' }} at {{ session().startTime | date:'shortTime' }}</p>
+        <div class="badge badge-outline mt-2 capitalize">{{ session().status }}</div>
+      </div>
+      <div class="card-actions">
+        @if (session().status === 'scheduled') {
+          <button class="btn btn-primary">Join Now</button>
+        }
+        @if (session().status === 'completed') {
+          <button class="btn btn-ghost">View Feedback</button>
+        }
+      </div>
+    </div>
+  </div>
+</div>
