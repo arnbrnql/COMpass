@@ -11,4 +11,5 @@ export interface User {
     isMentor: boolean;
     isMentee: boolean;
   };
+  calUsername?: string;
 }

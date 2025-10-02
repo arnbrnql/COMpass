@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
@@ -29,18 +29,15 @@ export default class MentorProfile {
 
   mentor = toSignal(this.mentor$);
 
-  // IMPORTANT: Replace 'YOUR_CAL_DOT_COM_USERNAME' with the mentor's actual Cal.com username.
-  // This will need to be stored in the mentor's profile in a future step.
-  // For now, we use a placeholder.
-  // In a real implementation, this would be: `https://cal.com/${this.mentor()?.calUsername}`
-  getCalComUrl(): SafeResourceUrl | null {
-    const mentor = this.mentor();
-    if (!mentor) {
+  // This computed signal will create the sanitized Cal.com URL
+  // It will only have a value if the mentor has set their calUsername
+  calComUrl = computed<SafeResourceUrl | null>(() => {
+    const username = this.mentor()?.calUsername;
+    if (!username) {
       return null;
     }
-
-    // Placeholder URL for the MVP.
-    const url = `https://cal.com/team/compass-app/mentorship-session`;
+    // You can customize this URL structure based on the specific Cal.com event type link
+    const url = `https://cal.com/${username}`;
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
-  }
+  });
 }

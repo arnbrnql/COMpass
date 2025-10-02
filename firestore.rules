@@ -2,9 +2,33 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow users to read and write their own user document
+
+    // By default, deny all reads and writes
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // USERS collection
+    // - Allow any authenticated user to read user profiles (for the discover page)
+    // - Allow a user to create and update their own profile document
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null;
+      allow create, update: if request.auth.uid == userId;
+    }
+
+    // SESSIONS collection
+    // - Allow a user to read/write sessions where they are either the mentee or mentor
+    // - This will be further secured by Cloud Functions later
+    match /sessions/{sessionId} {
+      allow read, write: if request.auth != null && (request.auth.uid == resource.data.menteeId || request.auth.uid == resource.data.mentorId);
+    }
+
+    // FEEDBACK collection
+    // - Allow a user to create feedback
+    // - Allow users to read feedback related to their sessions
+    match /feedback/{feedbackId} {
+       allow create: if request.auth != null;
+       allow read: if request.auth != null; // Further rules can restrict this to participants
     }
   }
 }

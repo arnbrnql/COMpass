@@ -32,8 +32,8 @@
         <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
             <h2 class="card-title text-2xl mb-4">Book a Session</h2>
-            @if(getCalComUrl(); as calUrl) {
-              <div class="w-full min-h-[650px] rounded-lg overflow-hidden">
+            @if(calComUrl(); as calUrl) {
+              <div class="w-full min-h-[650px] rounded-lg overflow-hidden border border-base-300">
                 <iframe
                   [src]="calUrl"
                   class="w-full h-full border-0"
@@ -41,7 +41,10 @@
                 ></iframe>
               </div>
             } @else {
-              <p>Booking is currently unavailable for this mentor.</p>
+              <div class="flex flex-col items-center justify-center min-h-[400px] text-center bg-base-200 rounded-lg">
+                <h3 class="text-xl font-bold">Booking Not Available</h3>
+                <p class="mt-2 max-w-sm">This mentor has not set up their booking calendar yet. Please check back later.</p>
+              </div>
             }
           </div>
         </div>
