@@ -27,4 +27,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/mentors/mentor-profile/mentor-profile'),
     canActivate: [authGuard],
   },
+  // Add this block for the session room
+  {
+    path: 'session/:id',
+    loadComponent: () => import('./features/sessions/session-room/session-room'),
+    canActivate: [authGuard],
+  },
 ];
