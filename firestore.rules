@@ -17,10 +17,16 @@ service cloud.firestore {
     }
 
     // SESSIONS collection
-    // - Allow a user to read/write sessions where they are either the mentee or mentor
-    // - This will be further secured by Cloud Functions later
+    // - Allow a user to read sessions where they are either the mentee or mentor
+    // - Allow creation if the user is the mentee or mentor
+    // - Allow updates only by participants
     match /sessions/{sessionId} {
-      allow read, write: if request.auth != null && (request.auth.uid == resource.data.menteeId || request.auth.uid == resource.data.mentorId);
+      allow read: if request.auth != null &&
+        (request.auth.uid == resource.data.menteeId || request.auth.uid == resource.data.mentorId);
+      allow create: if request.auth != null &&
+        (request.auth.uid == request.resource.data.menteeId || request.auth.uid == request.resource.data.mentorId);
+      allow update: if request.auth != null &&
+        (request.auth.uid == resource.data.menteeId || request.auth.uid == resource.data.mentorId);
     }
 
     // FEEDBACK collection
