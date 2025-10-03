@@ -5,7 +5,6 @@ import MenteeDashboard from '../mentee-dashboard/mentee-dashboard/mentee-dashboa
 
 @Component({
   selector: 'app-dashboard',
-  standalone: true,
   imports: [MentorDashboard, MenteeDashboard],
   templateUrl: './dashboard.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

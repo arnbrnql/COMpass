@@ -5,7 +5,6 @@ import { RoleService } from '../../../core/services/role.service';
 
 @Component({
   selector: 'app-navbar',
-  standalone: true,
   imports: [RouterLink],
   templateUrl: './navbar.html',
   styleUrl: './navbar.scss',
