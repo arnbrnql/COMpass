@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, DestroyRef } from '@angular/core';
 import {
   Auth,
   User as FirebaseAuthUser,
@@ -11,8 +11,8 @@ import {
 } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import { Observable, from } from 'rxjs';
-import { tap } from 'rxjs/operators';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { tap, catchError } from 'rxjs/operators';
+import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { LoginPayload } from '../../shared/models/auth.model';
 import { UserService } from './user.service';
@@ -25,6 +25,7 @@ export class AuthService {
   private auth: Auth = inject(Auth);
   private router = inject(Router);
   private userService = inject(UserService);
+  private destroyRef = inject(DestroyRef);
 
   // This signal holds the basic Firebase Auth user object
   readonly currentUser = signal<FirebaseAuthUser | null>(null);
@@ -42,9 +43,17 @@ export class AuthService {
       this.currentUser.set(user);
       if (user) {
         // If the user is logged in, fetch their full profile and set the signal
-        this.userService.getUserProfile(user.uid).subscribe(profile => {
-          this.currentUserProfile.set(profile);
-        });
+        this.userService.getUserProfile(user.uid)
+          .pipe(
+            takeUntilDestroyed(this.destroyRef),
+            catchError(error => {
+              console.error('Error fetching user profile:', error);
+              return [];
+            })
+          )
+          .subscribe(profile => {
+            this.currentUserProfile.set(profile);
+          });
       } else {
         // If the user logs out, clear the profile
         this.currentUserProfile.set(null);
