@@ -6,6 +6,8 @@ import {
   where,
   getDocs,
   orderBy,
+  doc,
+  docData,
 } from '@angular/fire/firestore';
 import { Session } from '../../shared/models/session.model';
 import { Observable, from, of } from 'rxjs';
@@ -21,6 +23,15 @@ export class SessionService {
   private authService = inject(AuthService);
 
   private currentUser$ = toObservable(this.authService.currentUser);
+
+  // Get a single session by ID
+  getSessionById(sessionId: string): Observable<Session | null> {
+    if (!sessionId) {
+      return of(null);
+    }
+    const sessionDocRef = doc(this.firestore, `sessions/${sessionId}`);
+    return docData(sessionDocRef, { idField: 'sessionId' }) as Observable<Session | null>;
+  }
 
   getSessionsForMentee(): Observable<Session[]> {
     return this.currentUser$.pipe(
