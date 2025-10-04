@@ -9,7 +9,7 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './register.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Register {
+export default class Register {
   private formBuilder = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);

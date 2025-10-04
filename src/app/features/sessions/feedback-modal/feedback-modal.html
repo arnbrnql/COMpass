@@ -1,0 +1,52 @@
+<div class="modal modal-open" [class.modal-open]="isModalOpen()">
+  <div class="modal-box">
+    <h3 class="font-bold text-2xl">Leave Feedback</h3>
+    <p class="py-4">How was your session? Your feedback helps improve the experience for everyone.</p>
+
+    <form [formGroup]="feedbackForm" (ngSubmit)="onSubmit()">
+      <div class="form-control mb-4">
+        <label class="label">
+          <span class="label-text">Overall Rating</span>
+        </label>
+        <div class="rating rating-lg">
+          @for (star of [0, 1, 2, 3, 4, 5]; track star) {
+            <input
+              type="radio"
+              name="rating-2"
+              class="mask mask-star-2 bg-orange-400"
+              (click)="setRating(star)"
+              [checked]="currentRating() === star"
+            />
+          }
+        </div>
+      </div>
+
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text">Your Feedback</span>
+        </label>
+        <textarea
+          formControlName="comment"
+          class="textarea textarea-bordered h-24"
+          placeholder="What went well? What could be improved?"
+        ></textarea>
+      </div>
+
+       @if (errorMessage()) {
+        <div class="alert alert-error text-sm mt-4">
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <div class="modal-action">
+        <button type="button" class="btn btn-ghost" (click)="close()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+          @if(isSubmitting()) {
+            <span class="loading loading-spinner"></span>
+          }
+          Submit Feedback
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

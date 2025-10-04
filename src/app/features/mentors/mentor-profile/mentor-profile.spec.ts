@@ -72,7 +72,7 @@ describe('MentorProfile', () => {
     mockDomSanitizer.bypassSecurityTrustResourceUrl.and.returnValue(mockSafeUrl);
     fixture.detectChanges();
 
-    const result = component.getCalComUrl();
+    const result = component.calComUrl();
     expect(mockDomSanitizer.bypassSecurityTrustResourceUrl).toHaveBeenCalledWith('https://cal.com/team/compass-app/mentorship-session');
     expect(result).toBe(mockSafeUrl);
   });
@@ -81,7 +81,7 @@ describe('MentorProfile', () => {
     mockUserService.getUserProfile.and.returnValue(of(null));
     fixture.detectChanges();
 
-    const result = component.getCalComUrl();
+    const result = component.calComUrl();
     expect(result).toBeNull();
   });
 });

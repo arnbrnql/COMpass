@@ -8,8 +8,9 @@ import {
   orderBy,
   doc,
   docData,
+  updateDoc,
 } from '@angular/fire/firestore';
-import { Session } from '../../shared/models/session.model';
+import { Session, SessionStatus } from '../../shared/models/session.model';
 import { Observable, from, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
@@ -31,6 +32,12 @@ export class SessionService {
     }
     const sessionDocRef = doc(this.firestore, `sessions/${sessionId}`);
     return docData(sessionDocRef, { idField: 'sessionId' }) as Observable<Session | null>;
+  }
+
+  // Update session status
+  updateSessionStatus(sessionId: string, status: SessionStatus): Observable<void> {
+    const sessionDocRef = doc(this.firestore, `sessions/${sessionId}`);
+    return from(updateDoc(sessionDocRef, { status }));
   }
 
   getSessionsForMentee(): Observable<Session[]> {
