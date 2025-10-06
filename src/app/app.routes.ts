@@ -33,4 +33,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/sessions/session-room/session-room'),
     canActivate: [authGuard],
   },
+  // Add this block for the profile edit page
+  {
+    path: 'profile/edit',
+    loadComponent: () => import('./features/profile/profile-edit/profile-edit'),
+    canActivate: [authGuard],
+  },
 ];
