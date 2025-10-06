@@ -19,15 +19,17 @@
               <h1 class="text-3xl font-bold">{{ mentorData.displayName }}</h1>
               <p class="mt-4 text-base-content/80">{{ mentorData.bio || 'This mentor has not provided a bio yet.' }}</p>
 
-              @if (mentorData.expertiseTags && mentorData.expertiseTags.length > 0) {
-                <div class="mt-6 w-full">
-                  <h3 class="font-bold text-lg mb-2">Expertise</h3>
-                  <div class="flex flex-wrap justify-center gap-2">
-                    @for (tag of mentorData.expertiseTags; track tag) {
-                      <div class="badge badge-primary badge-outline">{{ tag }}</div>
-                    }
+              @if (mentorData.mentorProfile?.expertise; as expertise) {
+                @if (expertise.length > 0) {
+                  <div class="mt-6 w-full">
+                    <h3 class="font-bold text-lg mb-2">Expertise</h3>
+                    <div class="flex flex-wrap justify-center gap-2">
+                      @for (tag of expertise; track tag) {
+                        <div class="badge badge-primary badge-outline">{{ tag }}</div>
+                      }
+                    </div>
                   </div>
-                </div>
+                }
               }
             </div>
           </div>

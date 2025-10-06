@@ -18,7 +18,9 @@ describe('MentorProfile', () => {
     email: 'mentor1@test.com',
     displayName: 'Mentor One',
     bio: 'Experienced software engineer',
-    expertiseTags: ['JavaScript', 'Angular', 'Node.js'],
+    mentorProfile: {
+      expertise: ['JavaScript', 'Angular', 'Node.js'],
+    },
     roleFlags: { isMentor: true, isMentee: false },
   };
 

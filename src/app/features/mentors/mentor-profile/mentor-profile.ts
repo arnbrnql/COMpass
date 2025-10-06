@@ -40,7 +40,7 @@ export default class MentorProfile {
   // This computed signal will create the sanitized Cal.com URL
   // It will only have a value if the mentor has set their calUsername
   calComUrl = computed<SafeResourceUrl | null>(() => {
-    const username = this.mentor()?.calUsername;
+    const username = this.mentor()?.mentorProfile?.calUsername;
     if (!username) {
       return null;
     }

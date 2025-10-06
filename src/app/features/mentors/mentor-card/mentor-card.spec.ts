@@ -13,8 +13,9 @@ describe('MentorCard', () => {
     displayName: 'Test Mentor',
     photoURL: 'https://example.com/photo.jpg',
     bio: 'Test mentor bio',
-    timezone: 'UTC',
-    expertiseTags: ['Angular', 'TypeScript'],
+    mentorProfile: {
+      expertise: ['Angular', 'TypeScript'],
+    },
     roleFlags: {
       isMentor: true,
       isMentee: false,
