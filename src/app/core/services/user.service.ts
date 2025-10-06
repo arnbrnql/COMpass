@@ -7,13 +7,13 @@ import {
   updateDoc,
 } from '@angular/fire/firestore';
 import { User } from '../../shared/models/user.model';
-import { Observable, of } from 'rxjs';
+import { Observable, of, from } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UserService {
-  private firestore: Firestore = inject(Firestore);
+  firestore: Firestore = inject(Firestore);
 
   getUserProfile(uid: string | undefined): Observable<User | null> {
     if (!uid) {
@@ -23,13 +23,13 @@ export class UserService {
     return docData(userDocRef) as Observable<User | null>;
   }
 
-  addUser(user: User): Promise<void> {
+  addUser(user: User): Observable<void> {
     const userDocRef = doc(this.firestore, `users/${user.uid}`);
-    return setDoc(userDocRef, user);
+    return from(setDoc(userDocRef, user));
   }
 
-  updateUserProfile(uid: string, data: Partial<User>): Promise<void> {
+  updateUserProfile(uid: string, data: Partial<User>): Observable<void> {
     const userDocRef = doc(this.firestore, `users/${uid}`);
-    return updateDoc(userDocRef, data);
+    return from(updateDoc(userDocRef, data));
   }
 }

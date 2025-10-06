@@ -10,7 +10,7 @@ import {
   onAuthStateChanged,
 } from '@angular/fire/auth';
 import { Router } from '@angular/router';
-import { Observable, from } from 'rxjs';
+import { Observable, from, firstValueFrom } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -83,7 +83,7 @@ export class AuthService {
       roleFlags,
     };
 
-    await this.userService.addUser(newUser);
+    await firstValueFrom(this.userService.addUser(newUser));
   }
 
   logout(): Observable<void> {
