@@ -1,4 +1,27 @@
-<div class="p-8">
-  <h1 class="text-3xl font-bold">Mentor Dashboard</h1>
-  <p class="mt-2 text-lg">Here you will see your upcoming sessions, mentorship requests, and your mentees.</p>
+<div class="container mx-auto p-8">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+    <h1 class="text-3xl font-bold">Mentor Dashboard</h1>
   </div>
+
+  <div class="mb-12">
+    <h2 class="text-2xl font-bold mb-4 border-b pb-2">Upcoming Sessions</h2>
+    @if (upcomingSessions().length > 0) {
+      @for (session of upcomingSessions(); track session.sessionId) {
+        <app-session-card [session]="session" />
+      }
+    } @else {
+      <p>You have no upcoming sessions.</p>
+    }
+  </div>
+
+  <div>
+    <h2 class="text-2xl font-bold mb-4 border-b pb-2">Past Sessions</h2>
+    @if (pastSessions().length > 0) {
+      @for (session of pastSessions(); track session.sessionId) {
+        <app-session-card [session]="session" />
+      }
+    } @else {
+      <p>You have no past sessions.</p>
+    }
+  </div>
+</div>
