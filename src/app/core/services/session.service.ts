@@ -40,6 +40,30 @@ export class SessionService {
     return from(updateDoc(sessionDocRef, { status }));
   }
 
+  // Get all sessions for the current user as a mentor
+  getSessionsForMentor(): Observable<Session[]> {
+    return this.currentUser$.pipe(
+      switchMap(user => {
+        if (!user) {
+          return of([]);
+        }
+
+        const sessionsCollection = collection(this.firestore, 'sessions');
+        const sessionsQuery = query(
+          sessionsCollection,
+          where('mentorId', '==', user.uid),
+          orderBy('startTime', 'desc')
+        );
+
+        return from(getDocs(sessionsQuery)).pipe(
+          map(querySnapshot => {
+            return querySnapshot.docs.map(doc => ({ sessionId: doc.id, ...doc.data() } as Session));
+          })
+        );
+      })
+    );
+  }
+
   getSessionsForMentee(): Observable<Session[]> {
     return this.currentUser$.pipe(
       switchMap(user => {
@@ -56,11 +80,7 @@ export class SessionService {
 
         return from(getDocs(sessionsQuery)).pipe(
           map(querySnapshot => {
-            const sessions: Session[] = [];
-            querySnapshot.forEach(doc => {
-              sessions.push({ sessionId: doc.id, ...doc.data() } as Session);
-            });
-            return sessions;
+            return querySnapshot.docs.map(doc => ({ sessionId: doc.id, ...doc.data() } as Session));
           })
         );
       })
