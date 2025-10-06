@@ -3,13 +3,22 @@ export interface User {
   email: string;
   displayName: string;
   photoURL?: string;
-  // MVP-specific fields
   bio?: string;
-  timezone?: string;
-  expertiseTags?: string[];
+  location?: string;
+  preferredLanguage?: string;
   roleFlags: {
     isMentor: boolean;
     isMentee: boolean;
   };
-  calUsername?: string;
+  // Mentor-specific fields
+  mentorProfile?: {
+    expertise?: string[];
+    industry?: string;
+    calUsername?: string;
+  };
+  // Mentee-specific fields
+  menteeProfile?: {
+    goals?: string[];
+    interests?: string[];
+  };
 }
