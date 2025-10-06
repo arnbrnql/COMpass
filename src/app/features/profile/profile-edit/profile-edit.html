@@ -1,0 +1,86 @@
+<div class="container mx-auto p-8">
+  <h1 class="text-4xl font-bold mb-8">Edit Your Profile</h1>
+
+  @if (currentUser(); as user) {
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="space-y-8">
+      <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+          <h2 class="card-title text-2xl">General Information</h2>
+          <div class="form-control">
+            <label class="label"><span class="label-text">Display Name</span></label>
+            <input type="text" formControlName="displayName" class="input input-bordered" />
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text">Bio</span></label>
+            <textarea formControlName="bio" class="textarea textarea-bordered h-24" placeholder="Tell us a little about yourself..."></textarea>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="form-control">
+              <label class="label"><span class="label-text">Location</span></label>
+              <input type="text" formControlName="location" class="input input-bordered" placeholder="e.g., San Francisco, CA" />
+            </div>
+            <div class="form-control">
+              <label class="label"><span class="label-text">Preferred Language</span></label>
+              <input type="text" formControlName="preferredLanguage" class="input input-bordered" placeholder="e.g., English" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      @if (user.roleFlags.isMentor) {
+        <div class="card bg-base-100 shadow-xl" formGroupName="mentorProfile">
+          <div class="card-body">
+            <h2 class="card-title text-2xl">Mentor Profile</h2>
+            <div class="form-control">
+              <label class="label"><span class="label-text">Areas of Expertise</span></label>
+              <input type="text" formControlName="expertise" class="input input-bordered" placeholder="e.g., Angular, Product Management, Leadership" />
+              <label class="label"><span class="label-text-alt">Comma-separated tags</span></label>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="form-control">
+                <label class="label"><span class="label-text">Industry</span></label>
+                <input type="text" formControlName="industry" class="input input-bordered" placeholder="e.g., Software Development" />
+              </div>
+              <div class="form-control">
+                <label class="label"><span class="label-text">Cal.com Username</span></label>
+                <input type="text" formControlName="calUsername" class="input input-bordered" placeholder="Your username from cal.com" />
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (user.roleFlags.isMentee) {
+        <div class="card bg-base-100 shadow-xl" formGroupName="menteeProfile">
+          <div class="card-body">
+            <h2 class="card-title text-2xl">Mentee Profile</h2>
+            <div class="form-control">
+              <label class="label"><span class="label-text">Interests</span></label>
+              <input type="text" formControlName="interests" class="input input-bordered" placeholder="e.g., UI/UX Design, Machine Learning, Startups" />
+               <label class="label"><span class="label-text-alt">Comma-separated tags</span></label>
+            </div>
+            <div class="form-control">
+              <label class="label"><span class="label-text">Goals</span></label>
+              <input type="text" formControlName="goals" class="input input-bordered" placeholder="e.g., Land a senior role, Build a side project" />
+               <label class="label"><span class="label-text-alt">Comma-separated tags</span></label>
+            </div>
+          </div>
+        </div>
+      }
+
+      <div class="flex justify-end items-center gap-4">
+        @if (successMessage()) {
+          <div class="text-success">{{ successMessage() }}</div>
+        }
+        <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <span class="loading loading-spinner"></span>
+          }
+          Save Changes
+        </button>
+      </div>
+    </form>
+  } @else {
+    <p>Loading profile...</p>
+  }
+</div>
