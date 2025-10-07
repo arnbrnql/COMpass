@@ -6,10 +6,11 @@ import { UserService } from '../../../core/services/user.service';
 import { User } from '../../../shared/models/user.model';
 import { Observable, of } from 'rxjs';
 import { switchMap, finalize } from 'rxjs/operators';
+import RequestModal from '../request-modal/request-modal';
 
 @Component({
   selector: 'app-mentor-profile',
-  imports: [RouterLink],
+  imports: [RouterLink, RequestModal],
   templateUrl: './mentor-profile.html',
   styleUrl: './mentor-profile.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,6 +21,7 @@ export default class MentorProfile {
   private sanitizer = inject(DomSanitizer);
 
   isLoading = signal(true);
+  isRequestModalOpen = signal(false);
 
   private mentor$: Observable<User | null> = this.route.params.pipe(
     switchMap(params => {
