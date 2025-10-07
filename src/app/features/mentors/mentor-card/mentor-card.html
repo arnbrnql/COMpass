@@ -1,16 +1,39 @@
-<div class="card bg-base-100 shadow-xl">
-  <figure class="px-10 pt-10">
+<div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 h-full">
+  <figure class="px-8 pt-8">
     <div class="avatar">
-      <div class="w-24 rounded-full">
-        <img [src]="mentor().photoURL || 'assets/images/default-avatar.png'" alt="Mentor Avatar" />
+      <div class="w-28 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+        <img [src]="mentor().photoURL || 'assets/images/default-avatar.png'" [alt]="mentor().displayName" />
       </div>
     </div>
   </figure>
   <div class="card-body items-center text-center">
-    <h2 class="card-title">{{ mentor().displayName }}</h2>
-    <p class="line-clamp-3">{{ mentor().bio || 'No bio provided.' }}</p>
-    <div class="card-actions mt-4">
-      <a [routerLink]="['/mentors', mentor().uid]" class="btn btn-primary">View Profile</a>
+    <h2 class="card-title text-xl mb-2">{{ mentor().displayName }}</h2>
+
+    @if (mentor().mentorProfile?.industry) {
+      <div class="badge badge-secondary badge-outline mb-2">{{ mentor().mentorProfile?.industry }}</div>
+    }
+
+    <p class="text-sm text-base-content/70 line-clamp-3 mb-4">
+      {{ mentor().bio || 'No bio provided.' }}
+    </p>
+
+    @if (mentor().mentorProfile?.expertise; as expertise) {
+      @if (expertise.length > 0) {
+        <div class="flex flex-wrap justify-center gap-1 mb-4">
+          @for (skill of expertise.slice(0, 3); track skill) {
+            <span class="badge badge-sm badge-ghost">{{ skill }}</span>
+          }
+          @if (expertise.length > 3) {
+            <span class="badge badge-sm badge-ghost">+{{ expertise.length - 3 }}</span>
+          }
+        </div>
+      }
+    }
+
+    <div class="card-actions mt-auto w-full">
+      <a [routerLink]="['/mentors', mentor().uid]" class="btn btn-primary btn-sm w-full">
+        View Profile
+      </a>
     </div>
   </div>
 </div>
