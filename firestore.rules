@@ -31,10 +31,18 @@ service cloud.firestore {
 
     // FEEDBACK collection
     // - Allow a user to create feedback
-    // - Allow users to read feedback related to their sessions
+    // - Allow users to read feedback ONLY if they were a participant in the associated session
     match /feedback/{feedbackId} {
-       allow create: if request.auth != null;
-       allow read: if request.auth != null; // Further rules can restrict this to participants
+      allow create: if request.auth != null;
+
+      // Allow read access ONLY if the requesting user was a participant
+      // in the session this feedback is associated with.
+      allow read: if request.auth != null &&
+                    (request.auth.uid == get(/databases/$(database)/documents/sessions/$(resource.data.sessionId)).data.menteeId ||
+                     request.auth.uid == get(/databases/$(database)/documents/sessions/$(resource.data.sessionId)).data.mentorId);
+
+      // Deny updates and deletes for now to maintain data integrity
+      allow update, delete: if false;
     }
   }
 }
