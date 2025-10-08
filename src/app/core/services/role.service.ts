@@ -1,8 +1,9 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
 import { UserService } from './user.service';
-import { switchMap, filter } from 'rxjs/operators';
+import { switchMap, filter, skip } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 @Injectable({
@@ -11,6 +12,7 @@ import { of } from 'rxjs';
 export class RoleService {
   private authService = inject(AuthService);
   private userService = inject(UserService);
+  private router = inject(Router);
 
   // The currently active role ('mentor' or 'mentee')
   activeRole = signal<'mentor' | 'mentee' | null>(null);
@@ -66,6 +68,17 @@ export class RoleService {
         return of(null);
       })
     ).subscribe();
+
+    // Effect to navigate to the correct dashboard when role changes (skip initial value)
+    toObservable(this.activeRole).pipe(
+      skip(1), // Skip the initial value to avoid navigation on page load
+      filter(role => role !== null)
+    ).subscribe(role => {
+      // Only navigate if we're currently on a dashboard route
+      if (this.router.url.includes('/dashboard')) {
+        this.router.navigate(['/dashboard', role]);
+      }
+    });
   }
 
   // Method to toggle between mentor and mentee roles
