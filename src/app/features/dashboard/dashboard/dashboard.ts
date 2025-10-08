@@ -1,11 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 import { RoleService } from '../../../core/services/role.service';
-import MentorDashboard from '../mentor-dashboard/mentor-dashboard/mentor-dashboard';
-import MenteeDashboard from '../mentee-dashboard/mentee-dashboard/mentee-dashboard';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [MentorDashboard, MenteeDashboard],
+  imports: [RouterOutlet],
   templateUrl: './dashboard.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

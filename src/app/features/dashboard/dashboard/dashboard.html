@@ -1,9 +1,1 @@
-@if (roleService.activeRole() === 'mentor') {
-  <app-mentor-dashboard />
-} @else if (roleService.activeRole() === 'mentee') {
-  <app-mentee-dashboard />
-} @else {
-  <div class="p-8">
-    <span class="loading loading-dots loading-lg"></span>
-  </div>
-}
+<router-outlet></router-outlet>
