@@ -17,8 +17,4 @@ export default class Navbar {
   logout() {
     this.authService.logout().subscribe();
   }
-
-  setRole(role: 'mentor' | 'mentee') {
-    this.roleService.setActiveRole(role);
-  }
 }

@@ -5,28 +5,16 @@
 
   <div class="navbar-center">
     @if (roleService.canSwitchRoles()) {
-      <div class="dropdown">
-        <div tabindex="0" role="button" class="btn btn-ghost">
-          <span>
-            Act as: <span class="font-bold capitalize">{{ roleService.activeRole() }}</span>
-          </span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 ml-1"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </div>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-50">
-          <li><a (click)="setRole('mentee')" [class.active]="roleService.activeRole() === 'mentee'">Mentee</a></li>
-          <li><a (click)="setRole('mentor')" [class.active]="roleService.activeRole() === 'mentor'">Mentor</a></li>
-        </ul>
+      <div class="form-control">
+        <label class="label cursor-pointer gap-4">
+          <span class="label-text">Act as {{ roleService.activeRole() === 'mentor' ? 'Mentee' : 'Mentor' }}</span>
+          <input 
+            type="checkbox" 
+            class="toggle toggle-primary" 
+            [checked]="roleService.activeRole() === 'mentor'" 
+            (change)="roleService.toggleRole()" 
+          />
+        </label>
       </div>
     }
   </div>

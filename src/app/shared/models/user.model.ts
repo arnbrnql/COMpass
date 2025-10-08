@@ -10,6 +10,7 @@ export interface User {
     isMentor: boolean;
     isMentee: boolean;
   };
+  activeRole?: 'mentor' | 'mentee';
   // Mentor-specific fields
   mentorProfile?: {
     expertise?: string[];
