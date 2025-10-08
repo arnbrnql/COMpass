@@ -24,7 +24,7 @@
           <a [routerLink]="['/session', session().sessionId]" class="btn btn-primary">Join Now</a>
         }
         @if (session().status === 'completed') {
-          <button class="btn btn-ghost">View Feedback</button>
+          <a [routerLink]="['/feedback', session().sessionId]" class="btn btn-ghost">View Feedback</a>
         }
       </div>
     </div>

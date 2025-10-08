@@ -1,11 +1,11 @@
 import { Component, signal } from '@angular/core';
-//import { RouterOutlet } from '@angular/router';
-
-import { MainLayout } from './shared/components/main-layout/main-layout';
+import { RouterOutlet } from '@angular/router';
+import Navbar from './shared/components/navbar/navbar';
+import { Footer } from './shared/components/footer/footer';
 
 @Component({
   selector: 'app-root',
-  imports: [MainLayout],
+  imports: [RouterOutlet, Navbar, Footer],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
