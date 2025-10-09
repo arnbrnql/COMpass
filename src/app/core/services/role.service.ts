@@ -1,10 +1,8 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
 import { UserService } from './user.service';
-import { switchMap, filter, skip } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -14,85 +12,102 @@ export class RoleService {
   private userService = inject(UserService);
   private router = inject(Router);
 
-  // The currently active role ('mentor' or 'mentee')
   activeRole = signal<'mentor' | 'mentee' | null>(null);
+  private isInitialized = signal<boolean>(false);
 
-  // Available roles now come directly from the AuthService's profile signal
   availableRoles = computed(() => {
     const profile = this.authService.currentUserProfile();
-    if (!profile) {
-      return { isMentor: false, isMentee: false };
-    }
-    return profile.roleFlags;
+    return profile?.roleFlags || { isMentor: false, isMentee: false };
   });
 
-  // A flag to determine if the role switcher should be visible
   canSwitchRoles = computed(() => {
     const roles = this.availableRoles();
     return roles.isMentor && roles.isMentee;
   });
 
   constructor() {
-    // Effect to set the active role from the user's profile when it loads
+    console.log('[RoleService] Constructor - initializing');
+    // This effect sets the role when profile loads
     effect(() => {
       const profile = this.authService.currentUserProfile();
+      const isLoaded = this.authService.isProfileLoaded();
+
+      console.log('[RoleService] Effect triggered - isLoaded:', isLoaded, 'profile:', profile ? profile.uid : 'null', 'isInitialized:', this.isInitialized());
+
+      // Only proceed once profile loading is complete
+      if (!isLoaded) {
+        console.log('[RoleService] Waiting for profile to load...');
+        return;
+      }
+
       if (!profile) {
+        console.log('[RoleService] No profile found, clearing activeRole and resetting initialization');
         this.activeRole.set(null);
+        // Reset initialization flag so we can re-initialize when user logs in
+        this.isInitialized.set(false);
         return;
       }
 
-      // If the user has an activeRole saved, use that
-      if (profile.activeRole) {
-        this.activeRole.set(profile.activeRole);
-        return;
-      }
-
-      // Otherwise, default to mentee if available, then mentor
-      if (profile.roleFlags.isMentee) {
-        this.activeRole.set('mentee');
-      } else if (profile.roleFlags.isMentor) {
-        this.activeRole.set('mentor');
-      } else {
-        this.activeRole.set(null);
-      }
-    });
-
-    // Effect to persist activeRole changes to Firestore
-    toObservable(this.activeRole).pipe(
-      filter(role => role !== null),
-      switchMap(role => {
-        const profile = this.authService.currentUserProfile();
-        if (profile && role && profile.activeRole !== role) {
-          return this.userService.updateUserProfile(profile.uid, { activeRole: role });
+      // Initialize or re-initialize when we have a profile
+      // This prevents the loop: we read from profile once per login session
+      if (!this.isInitialized()) {
+        console.log('[RoleService] Initializing role for logged-in user');
+        // Check if user has a saved activeRole preference
+        if (profile.activeRole) {
+          console.log('[RoleService] Setting activeRole from profile:', profile.activeRole);
+          this.activeRole.set(profile.activeRole);
+        } else {
+          // Determine role based on availability:
+          // - Single role (mentee-only): navigate to /dashboard/mentee
+          // - Single role (mentor-only): navigate to /dashboard/mentor
+          // - Both roles: default to /dashboard/mentee
+          if (profile.roleFlags.isMentee) {
+            console.log('[RoleService] User has mentee role, setting as active');
+            this.activeRole.set('mentee');
+          } else if (profile.roleFlags.isMentor) {
+            console.log('[RoleService] User has mentor role (no mentee), setting as active');
+            this.activeRole.set('mentor');
+          }
         }
-        return of(null);
-      })
-    ).subscribe();
-
-    // Effect to navigate to the correct dashboard when role changes (skip initial value)
-    toObservable(this.activeRole).pipe(
-      skip(1), // Skip the initial value to avoid navigation on page load
-      filter(role => role !== null)
-    ).subscribe(role => {
-      // Only navigate if we're currently on a dashboard route
-      if (this.router.url.includes('/dashboard')) {
-        this.router.navigate(['/dashboard', role]);
+        console.log('[RoleService] Initialization complete. Final activeRole:', this.activeRole());
+        console.log('[RoleService] Available roles:', profile.roleFlags);
+        this.isInitialized.set(true);
+      } else {
+        console.log('[RoleService] Already initialized, skipping');
       }
     });
   }
 
-  // Method to toggle between mentor and mentee roles
-  toggleRole() {
-    const currentRole = this.activeRole();
-    if (currentRole === 'mentor') {
-      this.activeRole.set('mentee');
-    } else {
-      this.activeRole.set('mentor');
+  async setRole(role: 'mentor' | 'mentee'): Promise<void> {
+    const user = this.authService.currentUserProfile();
+    if (!user) return;
+
+    // Only update if the role is actually changing
+    if (user.activeRole === role) return;
+
+    // Update local state immediately for UI responsiveness
+    this.activeRole.set(role);
+
+    // Update Firestore in the background
+    try {
+      await firstValueFrom(this.userService.updateUserProfile(user.uid, { activeRole: role }));
+    } catch (error) {
+      console.error('Failed to update role in Firestore:', error);
+      // Revert on error
+      this.activeRole.set(user.activeRole || null);
     }
   }
 
-  // Method to set a specific role
-  setActiveRole(role: 'mentor' | 'mentee') {
-    this.activeRole.set(role);
+  async toggleRole(): Promise<void> {
+    if (!this.canSwitchRoles()) return;
+
+    const currentRole = this.activeRole();
+    if (!currentRole) return;
+
+    const newRole = currentRole === 'mentor' ? 'mentee' : 'mentor';
+    await this.setRole(newRole);
+
+    // Navigate after role is set
+    this.router.navigate(['/dashboard', newRole]);
   }
 }

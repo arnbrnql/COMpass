@@ -16,7 +16,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/dashboard/dashboard/dashboard').then(m => m.default),
     children: [
-      { path: '', redirectTo: 'mentee', pathMatch: 'full' },
+      // Remove the automatic redirect - let Dashboard component handle it
       {
         path: 'mentor',
         canActivate: [mentorGuard],

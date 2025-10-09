@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, NgZone } from '@angular/core';
 import {
   Firestore,
   collection,
@@ -22,6 +22,7 @@ import { toObservable } from '@angular/core/rxjs-interop';
 export class SessionService {
   private firestore: Firestore = inject(Firestore);
   private authService = inject(AuthService);
+  private ngZone = inject(NgZone);
 
   private currentUser$ = toObservable(this.authService.currentUser);
 
@@ -37,7 +38,16 @@ export class SessionService {
   // Update session status
   updateSessionStatus(sessionId: string, status: SessionStatus): Observable<void> {
     const sessionDocRef = doc(this.firestore, `sessions/${sessionId}`);
-    return from(updateDoc(sessionDocRef, { status }));
+    // Wrap in NgZone to ensure proper change detection
+    return new Observable(observer => {
+      this.ngZone.run(() => {
+        from(updateDoc(sessionDocRef, { status })).subscribe({
+          next: () => observer.next(),
+          error: (err) => observer.error(err),
+          complete: () => observer.complete(),
+        });
+      });
+    });
   }
 
   // Get all sessions for the current user as a mentor
@@ -55,11 +65,20 @@ export class SessionService {
           orderBy('startTime', 'desc')
         );
 
-        return from(getDocs(sessionsQuery)).pipe(
-          map(querySnapshot => {
-            return querySnapshot.docs.map(doc => ({ sessionId: doc.id, ...doc.data() } as Session));
-          })
-        );
+        // Wrap in NgZone to ensure proper change detection
+        return new Observable<Session[]>(observer => {
+          this.ngZone.run(() => {
+            from(getDocs(sessionsQuery)).pipe(
+              map(querySnapshot => {
+                return querySnapshot.docs.map(doc => ({ sessionId: doc.id, ...doc.data() } as Session));
+              })
+            ).subscribe({
+              next: (sessions) => observer.next(sessions),
+              error: (err) => observer.error(err),
+              complete: () => observer.complete(),
+            });
+          });
+        });
       })
     );
   }
@@ -78,11 +97,20 @@ export class SessionService {
           orderBy('startTime', 'desc') // Order by start time, newest first
         );
 
-        return from(getDocs(sessionsQuery)).pipe(
-          map(querySnapshot => {
-            return querySnapshot.docs.map(doc => ({ sessionId: doc.id, ...doc.data() } as Session));
-          })
-        );
+        // Wrap in NgZone to ensure proper change detection
+        return new Observable<Session[]>(observer => {
+          this.ngZone.run(() => {
+            from(getDocs(sessionsQuery)).pipe(
+              map(querySnapshot => {
+                return querySnapshot.docs.map(doc => ({ sessionId: doc.id, ...doc.data() } as Session));
+              })
+            ).subscribe({
+              next: (sessions) => observer.next(sessions),
+              error: (err) => observer.error(err),
+              complete: () => observer.complete(),
+            });
+          });
+        });
       })
     );
   }

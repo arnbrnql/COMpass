@@ -4,16 +4,20 @@
   </div>
 
   <div class="navbar-center">
-    @if (roleService.canSwitchRoles()) {
+    @if (authService.isAuthenticated() && roleService.activeRole()) {
       <div class="form-control">
-        <label class="label cursor-pointer gap-4">
-          <span class="label-text">Act as {{ roleService.activeRole() === 'mentor' ? 'Mentee' : 'Mentor' }}</span>
+        <label class="label cursor-pointer gap-4 flex-row items-center">
+          <span class="label-text font-medium">Mentee</span>
+
           <input
+            #toggleInput
             type="checkbox"
             class="toggle toggle-primary"
             [checked]="roleService.activeRole() === 'mentor'"
-            (change)="roleService.toggleRole()"
+            (change)="handleRoleToggle()"
           />
+
+          <span class="label-text font-medium">Mentor</span>
         </label>
       </div>
     }
@@ -47,3 +51,11 @@
     }
   </div>
 </div>
+
+@if (isUnlockModalOpen()) {
+  <app-unlock-persona-modal
+    (close)="onModalClose()"
+    (unlockSuccess)="onUnlockSuccess()"
+    #unlockModal
+  ></app-unlock-persona-modal>
+}
