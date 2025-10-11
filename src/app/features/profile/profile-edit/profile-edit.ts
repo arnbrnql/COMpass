@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService } from '../../../core/services/user.service';
@@ -15,6 +16,7 @@ export default class ProfileEdit implements OnInit {
   private formBuilder = inject(FormBuilder);
   private authService = inject(AuthService);
   private userService = inject(UserService);
+  private router = inject(Router);
 
   currentUser = this.authService.currentUserProfile;
   isSubmitting = signal(false);
@@ -32,7 +34,7 @@ export default class ProfileEdit implements OnInit {
     }),
     menteeProfile: this.formBuilder.group({
       interests: [''], // Will be handled as a string of tags
-      goals: [''],     // Will be handled as a string of tags
+      goals: [''], // Will be handled as a string of tags
     }),
   });
 
@@ -79,14 +81,23 @@ export default class ProfileEdit implements OnInit {
       preferredLanguage: formValue.preferredLanguage || undefined,
       mentorProfile: {
         ...user.mentorProfile,
-        expertise: formValue.mentorProfile.expertise?.split(',').map(s => s.trim()).filter(Boolean),
+        expertise: formValue.mentorProfile.expertise
+          ?.split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
         industry: formValue.mentorProfile.industry || undefined,
         calUsername: formValue.mentorProfile.calUsername || undefined,
       },
       menteeProfile: {
         ...user.menteeProfile,
-        interests: formValue.menteeProfile.interests?.split(',').map(s => s.trim()).filter(Boolean),
-        goals: formValue.menteeProfile.goals?.split(',').map(s => s.trim()).filter(Boolean),
+        interests: formValue.menteeProfile.interests
+          ?.split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
+        goals: formValue.menteeProfile.goals
+          ?.split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
       },
     };
 
@@ -98,5 +109,12 @@ export default class ProfileEdit implements OnInit {
     } finally {
       this.isSubmitting.set(false);
     }
+  }
+
+  // Navigate back to dashboard based on the user's active role (falls back to 'mentee')
+  goBack(): void {
+    const user = this.currentUser();
+    const role = user?.roleFlags?.isMentor ? 'mentor' : 'mentee';
+    this.router.navigate(['/dashboard', role]);
   }
 }
