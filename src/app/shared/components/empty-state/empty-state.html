@@ -1,0 +1,38 @@
+<section class="fallback-state fallback-state--empty" role="status" aria-live="polite">
+  <div class="fallback-state__icon" aria-hidden="true">
+    @switch (iconName()) {
+      @case ('search') {
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      }
+      @case ('calendar') {
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M8 7V3m8 4V3m-9 8h10m-9 4h4m-7 4h14a2 2 0 002-2V7a2 2 0 00-2-2h-2V3m-4 0v2H9V3M5 21a2 2 0 01-2-2V7a2 2 0 012-2h2"
+          />
+        </svg>
+      }
+      @default {
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m0 0l4-4m-4 4l4 4m8 0v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6" />
+        </svg>
+      }
+    }
+  </div>
+  <div class="fallback-state__body">
+    <h2 class="fallback-state__title">{{ title() }}</h2>
+    @if (message()) {
+      <p class="fallback-state__message">{{ message() }}</p>
+    }
+    <ng-content />
+    @if (actionLabel()) {
+      <div class="fallback-state__actions">
+        <button type="button" class="btn btn-primary" (click)="onActionClick()">{{ actionLabel() }}</button>
+      </div>
+    }
+  </div>
+</section>

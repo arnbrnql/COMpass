@@ -1,0 +1,114 @@
+<dialog class="modal modal-open">
+  <div class="modal-box max-w-lg">
+    <div class="flex items-start gap-4 mb-6">
+      <div class="p-3 rounded-lg shrink-0" [class.bg-success/10]="unlockForm.get('roleToUnlock')?.value === 'mentor'" [class.bg-info/10]="unlockForm.get('roleToUnlock')?.value === 'mentee'">
+        @if (unlockForm.get('roleToUnlock')?.value === 'mentor') {
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        } @else {
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-info" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        }
+      </div>
+      <div class="flex-1">
+        <h3 class="text-2xl font-bold mb-1">Unlock {{ unlockForm.get('roleToUnlock')?.value === 'mentor' ? 'Mentor' : 'Mentee' }} Role</h3>
+        <p class="text-sm text-base-content/70">
+          @if (unlockForm.get('roleToUnlock')?.value === 'mentor') {
+            Start helping others grow by sharing your expertise
+          } @else {
+            Begin your learning journey with experienced mentors
+          }
+        </p>
+      </div>
+    </div>
+
+    <form [formGroup]="unlockForm" (ngSubmit)="onSubmit()" class="space-y-4">
+      @if (unlockForm.get('roleToUnlock')?.value === 'mentor') {
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-semibold">Areas of Expertise</span>
+            <span class="label-text-alt">Optional</span>
+          </label>
+          <input
+            type="text"
+            formControlName="expertise"
+            class="input input-bordered w-full"
+            placeholder="e.g., Angular, Product Management, Leadership"
+          />
+          <label class="label">
+            <span class="label-text-alt text-base-content/60">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Separate multiple skills with commas
+            </span>
+          </label>
+        </div>
+
+            <div class="alert alert-info">
+              <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div class="text-sm">
+                <p class="font-semibold">Cal.com Account Required</p>
+                <p>After unlocking the mentor role, you'll set up your Cal.com account to receive bookings from mentees</p>
+              </div>
+            </div>
+      } @else {
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-semibold">Learning Goals</span>
+            <span class="label-text-alt">Optional</span>
+          </label>
+          <input
+            type="text"
+            formControlName="goals"
+            class="input input-bordered w-full"
+            placeholder="e.g., Career Growth, Build a Side Project, Public Speaking"
+          />
+          <label class="label">
+            <span class="label-text-alt text-base-content/60">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Separate multiple goals with commas
+            </span>
+          </label>
+        </div>
+
+        <div class="alert alert-info">
+          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div class="text-sm">
+            <p class="font-semibold">Start exploring mentors</p>
+            <p>You can refine your goals and profile details anytime in settings</p>
+          </div>
+        </div>
+      }
+
+      <div class="modal-action pt-4 border-t border-base-300">
+        <button type="button" class="btn btn-ghost" (click)="close.emit()" [disabled]="isSubmitting()">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <span class="loading loading-spinner loading-sm"></span>
+            Unlocking...
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+            </svg>
+            Unlock Role
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button type="button" (click)="close.emit()">close</button>
+  </form>
+</dialog>
+

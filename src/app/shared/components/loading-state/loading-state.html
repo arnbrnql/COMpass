@@ -1,0 +1,16 @@
+<section
+  class="fallback-state fallback-state--loading"
+  role="status"
+  aria-live="polite"
+  [class.fallback-state--backdrop]="showBackdrop()"
+>
+  <div class="fallback-state__icon" aria-hidden="true">
+    <span class="loading loading-spinner loading-lg"></span>
+  </div>
+  <div class="fallback-state__body">
+    <h2 class="fallback-state__title">{{ title() }}</h2>
+    @if (message()) {
+      <p class="fallback-state__message">{{ message() }}</p>
+    }
+  </div>
+</section>
