@@ -1,0 +1,59 @@
+<div class="container mx-auto p-4 md:p-8">
+  <div class="mb-8 space-y-4">
+    <div class="flex flex-col gap-3 md:flex-row md:items-center md:gap-6">
+      <app-back-button label="Back" [fallbackCommands]="['/dashboard']" />
+      <div>
+        <h1 class="text-3xl font-bold">Discover Mentors</h1>
+        <p class="mt-2 text-base-content/70">Find mentors who can help you grow and achieve your goals</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-6 bg-base-100 shadow">
+    <div class="card-body">
+      <input
+        type="text"
+        class="input input-bordered"
+        placeholder="Search mentors by name, bio, or expertise"
+        [value]="searchQuery()"
+        (input)="searchQuery.set($any($event.target).value)"
+        aria-label="Search mentors"
+      />
+    </div>
+  </div>
+
+  @if (loadError(); as errorMessage) {
+    <app-error-state
+      class="mb-8"
+      title="Mentors temporarily unavailable"
+      [message]="errorMessage"
+      [showRetry]="true"
+      retryLabel="Try again"
+      (retry)="retryLoad()"
+    />
+  } @else if (isLoading()) {
+    <app-loading-state
+      class="mb-8"
+      title="Finding mentors"
+      message="Just a moment while we load the mentor directory."
+      [showBackdrop]="true"
+    />
+  } @else {
+    <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      @for (mentor of filteredMentors(); track mentor.uid) {
+        <app-mentor-card [mentor]="mentor" />
+      }
+    </div>
+
+    @if (filteredMentors().length === 0) {
+      <app-empty-state
+        iconName="search"
+        title="No mentors found"
+        [message]="emptyStateMessage()"
+        [actionLabel]="searchQuery() ? 'Clear search' : null"
+        (action)="clearSearch()"
+      />
+    }
+
+  }
+</div>

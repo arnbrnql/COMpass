@@ -1,0 +1,250 @@
+<div class="container mx-auto p-4 md:p-8">
+  <div class="mb-8 space-y-4">
+    <div class="flex flex-col gap-3 md:flex-row md:items-center md:gap-6">
+      <app-back-button label="Back to mentors" [fallbackCommands]="['/discover-mentors']" />
+      <div>
+        <h1 class="text-3xl font-bold">Mentor Profile</h1>
+        <p class="mt-2 text-base-content/70">Learn more before requesting mentorship</p>
+      </div>
+    </div>
+  </div>
+
+  @if (loadError(); as errorMessage) {
+    <app-error-state
+      class="mb-8"
+      title="Mentor profile unavailable"
+      [message]="errorMessage"
+    />
+  } @else if (isLoading()) {
+    <app-loading-state
+      class="mb-8"
+      title="Loading mentor profile"
+      message="We're fetching the latest details from the mentor directory."
+      [showBackdrop]="true"
+    />
+  } @else if (mentor(); as mentorData) {
+      <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+        <div class="md:col-span-1">
+          <div class="card bg-base-100 shadow-xl">
+            <figure class="px-10 pt-10">
+              <div class="avatar">
+                <div class="w-32 rounded-full ring ring-primary ring-offset-2 ring-offset-base-100">
+                  <img
+                    [src]="avatarFor(mentorData)"
+                    alt="Mentor Avatar"
+                    width="128"
+                    height="128"
+                  />
+                </div>
+              </div>
+            </figure>
+            <div class="card-body items-center text-center">
+              <h1 class="text-3xl font-bold">{{ mentorData.displayName }}</h1>
+
+              <p class="mt-4 text-base-content/80">{{ mentorData.bio || 'This mentor has not provided a bio yet.' }}</p>
+
+              @if (mentorData.mentorProfile?.expertise; as expertise) {
+                @if (expertise.length > 0) {
+                  <div class="mt-6 w-full">
+                    <h3 class="text-lg font-bold">Expertise</h3>
+                    <div class="mt-2 flex flex-wrap justify-center gap-2">
+                      @for (tag of expertise; track tag) {
+                        <span class="badge badge-primary badge-outline">{{ tag }}</span>
+                      }
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="md:col-span-2 space-y-6">
+          @if (successMessage()) {
+            <div class="alert alert-success">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{{ successMessage() }}</span>
+            </div>
+          }
+
+          @if (shouldShowCalSetupPrompt()) {
+            <div class="card border border-warning/20 bg-warning/10 shadow-xl">
+              <div class="card-body flex flex-col gap-3 md:flex-row md:items-center md:gap-6">
+                <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-warning/20">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-2.5L13.73 4c-.77-.83-1.96-.83-2.73 0L3.34 16.5C2.57 17.33 3.53 19 5.07 19z" />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <h3 class="text-lg font-semibold text-warning">Connect your Cal.com calendar</h3>
+                  <p class="text-base-content/80">
+                    Add your Cal.com username so mentees can request sessions without friction.
+                  </p>
+                </div>
+                <button class="btn btn-warning" (click)="openCalComSetup()">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 3h.01M4.93 4.93l14.14 14.14" />
+                  </svg>
+                  Launch setup guide
+                </button>
+              </div>
+            </div>
+          }
+
+          @if (shouldShowVisitorCalInfo()) {
+            <div class="alert alert-warning">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-8.94 5.5" />
+              </svg>
+              <div>
+                <h4 class="font-semibold">Calendar not connected yet</h4>
+                <p class="text-sm text-base-content/70">
+                  This mentor is still finishing their Cal.com setup. You can still send a request and they will unlock their
+                  calendar once ready.
+                </p>
+              </div>
+            </div>
+          }
+
+          <div class="card bg-base-100 shadow-xl">
+            <div class="card-body space-y-6">
+              <div>
+                <h2 class="card-title text-2xl">Request Mentorship</h2>
+                <p class="text-base-content/70">
+                  Share your goals and availability. Once approved, their Cal.com calendar unlocks for booking.
+                </p>
+              </div>
+
+              @if (hasExistingRequest()) {
+                <div class="alert alert-info">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <h3 class="font-semibold">Request already sent</h3>
+                    @if (requestStatus(); as status) {
+                      <p class="text-sm text-base-content/70">
+                        Current status: <span class="font-semibold text-base-content">{{ getRequestStatusLabel(status) }}</span>
+                      </p>
+                    }
+                  </div>
+                </div>
+
+                @if (requestStatus(); as status) {
+                  <p class="mt-3 text-sm text-base-content/70">
+                    Current status:
+                    <span class="font-semibold text-base-content">{{ getRequestStatusLabel(status) }}</span>
+                  </p>
+                }
+
+                <div class="mt-4 p-4 bg-base-200 rounded-lg">
+                  <h3 class="font-semibold mb-2">Calendar Access Status</h3>
+                  @if (hasCalendarAccess()) {
+                    <div class="mt-2 flex flex-col gap-3 text-success md:flex-row md:items-center md:gap-4">
+                      <div class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="font-medium">Calendar unlocked — you can book sessions.</span>
+                      </div>
+                      @if (bookingUrl(); as externalLink) {
+                        <a
+                          class="btn btn-success btn-sm"
+                          [href]="externalLink"
+                          target="_blank"
+                          rel="noopener"
+                        >
+                          Open in Cal.com
+                        </a>
+                      }
+                    </div>
+
+                    @if (calComUrl(); as safeUrl) {
+                      <div class="mt-4 overflow-hidden rounded-lg border border-success/20">
+                        <iframe
+                          [src]="safeUrl"
+                          class="h-[600px] w-full"
+                          frameborder="0"
+                          title="Cal.com calendar"
+                        ></iframe>
+                      </div>
+                    } @else {
+                      <p class="mt-2 text-sm text-base-content/70">
+                        The mentor hasn't shared a booking link yet. Reach out to coordinate a session.
+                      </p>
+                    }
+                  } @else {
+                    @if (requestStatus() === RequestStatus.Approved) {
+                      <div class="flex items-center gap-2 text-warning">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        <span>Calendar locked - The mentor has approved your request but hasn't unlocked bookings yet.</span>
+                      </div>
+                    } @else {
+                      <div class="flex items-center gap-2 text-warning">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        <span>Calendar locked - Waiting for mentor approval</span>
+                      </div>
+                    }
+                  }
+                </div>
+              } @else {
+                @if (requestBlockReason(); as blockReason) {
+                  <div class="alert alert-warning">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.94 4h13.86c1.54 0 2.5-1.67 1.73-2.5L13.73 4c-.77-.83-1.96-.83-2.73 0L3.34 16.5c-.77.83.19 2.5 1.73 2.5z" />
+                    </svg>
+                    <div>
+                      <h3 class="font-semibold">Action required</h3>
+                      <p class="text-sm text-base-content/70">{{ blockReason }}</p>
+                      @if (!isAuthenticated()) {
+                        <a routerLink="/auth/login" class="btn btn-primary btn-sm mt-3">Sign in</a>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <button
+                  class="btn btn-primary btn-lg"
+                  type="button"
+                  (click)="openRequestModal()"
+                  [disabled]="!canOpenRequestModal()"
+                >
+                  Request mentorship
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+  } @else {
+    <app-empty-state
+      iconName="inbox"
+      title="Mentor not found"
+      message="We couldn't find a profile for this mentor. They may have updated their availability."
+      actionLabel="Back to mentor directory"
+      (action)="navigateToDirectory()"
+    />
+  }
+
+  @if (mentor(); as mentorData) {
+    <app-request-mentorship-modal
+      [mentorId]="mentorData.uid"
+      [mentorName]="mentorData.displayName"
+      [isModalOpen]="isRequestModalOpen()"
+      (closeModal)="closeRequestModal()"
+      (requestSuccess)="handleRequestSuccess($event)"
+    />
+  }
+
+  <app-cal-com-setup-guide
+    [isModalOpen]="showCalComSetup()"
+    (closeModal)="closeCalComSetup()"
+    (setupComplete)="onCalComSetupComplete($event)"
+  />
+</div>

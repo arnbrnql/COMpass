@@ -1,0 +1,42 @@
+<div class="card bg-base-100 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 h-full group">
+  <figure class="px-8 pt-8">
+    <div class="avatar">
+      <div class="w-28 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 group-hover:ring-secondary transition-colors duration-300">
+        <img
+          loading="lazy"
+          [src]="getAvatarFor(mentor())"
+          [alt]="mentor().displayName + ' avatar'"
+          class="group-hover:scale-110 transition-transform duration-300"
+          width="112"
+          height="112"
+        />
+      </div>
+    </div>
+  </figure>
+  <div class="card-body items-center text-center">
+    <h2 class="card-title text-xl mb-2 group-hover:text-primary transition-colors duration-300">{{ mentor().displayName }}</h2>
+
+    <p class="text-sm text-base-content/70 line-clamp-3 mb-4">
+      {{ mentor().bio || 'No bio provided.' }}
+    </p>
+
+    @if (mentor().mentorProfile?.expertise; as expertise) {
+      @if (expertise.length > 0) {
+        <div class="flex flex-wrap justify-center gap-1 mb-4">
+          @for (skill of expertise.slice(0, 3); track skill) {
+            <span class="badge badge-sm badge-ghost group-hover:badge-primary transition-colors duration-300">{{ skill }}</span>
+          }
+          @if (expertise.length > 3) {
+            <span class="badge badge-sm badge-ghost group-hover:badge-primary transition-colors duration-300">+{{ expertise.length - 3 }}</span>
+          }
+        </div>
+      }
+    }
+
+    <div class="card-actions mt-auto w-full">
+      <a [routerLink]="['/mentors', mentor().uid]" class="btn btn-primary btn-sm w-full group-hover:btn-secondary transition-all duration-300">
+        <span class="group-hover:scale-110 transition-transform duration-300">View Profile</span>
+      </a>
+    </div>
+  </div>
+</div>
