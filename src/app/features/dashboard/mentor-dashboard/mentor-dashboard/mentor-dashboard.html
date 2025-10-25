@@ -1,0 +1,98 @@
+@let user = currentUser$ | async;
+@let vm = viewModel$ | async;
+
+<div class="container mx-auto p-4 md:p-8">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+    <div>
+      <h1 class="text-3xl md:text-4xl font-bold mb-2">Mentor Dashboard</h1>
+      @if (user) {
+        <p class="text-base-content/70">Welcome back, {{ user.displayName }}! Manage your mentoring sessions and requests.</p>
+      } @else {
+        <p class="text-base-content/70">Manage your mentoring sessions and mentorship requests</p>
+      }
+    </div>
+  </div>
+
+  @if (vm?.error; as error) {
+    <app-error-state
+      class="mb-6"
+      title="Mentorship requests unavailable"
+      [message]="error"
+      [showRetry]="true"
+      retryLabel="Try again"
+      (retry)="retryLoad()"
+    />
+  }
+
+  @if (vm?.loading && !vm?.error) {
+    <div class="alert alert-info shadow mb-6" role="status">
+      <span class="loading loading-spinner loading-sm mr-3"></span>
+      Loading your mentorship requests…
+    </div>
+  }
+
+  @if (vm) {
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="stat bg-base-100 rounded-lg shadow">
+      <div class="stat-figure text-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-8 h-8 stroke-current">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+      </div>
+      <div class="stat-title">Total Requests</div>
+      <div class="stat-value text-primary">{{ vm.stats.totalRequests }}</div>
+    </div>
+
+    <div class="stat bg-base-100 rounded-lg shadow">
+      <div class="stat-figure text-warning">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-8 h-8 stroke-current">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <div class="stat-title">Pending</div>
+      <div class="stat-value text-warning">{{ vm.stats.pendingRequests }}</div>
+    </div>
+
+    <div class="stat bg-base-100 rounded-lg shadow">
+      <div class="stat-figure text-success">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-8 h-8 stroke-current">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+        </svg>
+      </div>
+      <div class="stat-title">Active Mentees</div>
+      <div class="stat-value text-success">{{ vm.stats.activeMentees }}</div>
+    </div>
+
+    <div class="stat bg-base-100 rounded-lg shadow">
+      <div class="stat-figure text-info">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-8 h-8 stroke-current">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <div class="stat-title">Completed</div>
+      <div class="stat-value text-info">{{ vm.stats.completedMentorships }}</div>
+    </div>
+  </div>
+  }
+
+  @if (vm?.stats?.totalRequests === 0) {
+    <div class="card bg-base-100 shadow-xl mb-8">
+      <div class="card-body text-center">
+        <h2 class="card-title justify-center text-2xl">Ready to Mentor?</h2>
+        <p class="text-base-content/70 mb-4">Complete your mentor profile to start receiving mentorship requests from mentees.</p>
+        <div class="card-actions justify-center">
+          <a routerLink="/profile/edit" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Complete Profile
+          </a>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (user) {
+    <app-mentorship-requests-list [mentorId]="user.uid" />
+  }
+</div>
