@@ -38,16 +38,17 @@ const firebaseProviders = [
   provideAnalytics(() => getAnalytics()),
   ScreenTrackingService,
   UserTrackingService,
-  provideAppCheck(() => {
-    const globalRef = globalThis as typeof globalThis & {
-      FIREBASE_APPCHECK_DEBUG_TOKEN?: boolean | string;
-    };
+  // App Check temporarily disabled until domains are properly configured
+  // provideAppCheck(() => {
+  //   const globalRef = globalThis as typeof globalThis & {
+  //     FIREBASE_APPCHECK_DEBUG_TOKEN?: boolean | string;
+  //   };
 
-    globalRef.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+  //   globalRef.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
 
-    const provider = new ReCaptchaEnterpriseProvider(environment.recaptchaEnterpriseKey);
-    return initializeAppCheck(undefined, { provider, isTokenAutoRefreshEnabled: true });
-  }),
+  //   const provider = new ReCaptchaEnterpriseProvider(environment.recaptchaEnterpriseKey);
+  //   return initializeAppCheck(undefined, { provider, isTokenAutoRefreshEnabled: true });
+  // }),
   provideFirestore(() => getFirestore()),
   provideFunctions(() => getFunctions()),
   provideMessaging(() => getMessaging()),
