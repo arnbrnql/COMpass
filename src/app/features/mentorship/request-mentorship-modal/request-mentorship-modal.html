@@ -1,0 +1,152 @@
+@if (isModalOpen()) {
+  <div class="modal modal-open">
+    <div class="modal-box max-w-2xl">
+      <div class="flex items-start gap-4 mb-6">
+        <div class="p-3 bg-primary/10 rounded-lg shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+          </svg>
+        </div>
+        <div class="flex-1">
+          <h3 class="text-2xl font-bold mb-1">Request Mentorship</h3>
+          @if (mentorName()) {
+            <p class="text-base-content/70">Connect with <strong class="text-primary">{{ mentorName() }}</strong></p>
+          }
+        </div>
+        <button class="btn btn-sm btn-circle btn-ghost" (click)="onClose()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      @if (errorMessage()) {
+        <div class="alert alert-error mb-6">
+          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <form [formGroup]="requestForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <div class="form-control">
+          <label class="label" for="message">
+            <span class="label-text font-semibold">Why do you want mentorship?</span>
+            <span class="label-text-alt text-error">Required</span>
+          </label>
+          <textarea
+            id="message"
+            class="textarea textarea-bordered h-32 w-full"
+            placeholder="Tell the mentor about yourself, your goals, and why you think they would be a good fit. Be specific and genuine..."
+            formControlName="message"
+            [class.textarea-error]="requestForm.get('message')?.invalid && requestForm.get('message')?.touched"
+            autocomplete="off"
+            aria-describedby="message-error message-counter"
+            autofocus
+          ></textarea>
+          <label class="label">
+            <span class="label-text-alt text-base-content/60">Share your background and what you hope to learn</span>
+            <span class="label-text-alt" id="message-counter" [class.text-error]="(requestForm.get('message')?.value?.length || 0) > 1000">
+              {{ requestForm.get('message')?.value?.length || 0 }}/1000
+            </span>
+          </label>
+          @if (requestForm.get('message')?.invalid && requestForm.get('message')?.touched) {
+            <label class="label">
+              <span class="label-text-alt text-error" id="message-error" role="alert">
+                @if (requestForm.get('message')?.errors?.['required']) {
+                  Please share why you want mentorship
+                } @else if (requestForm.get('message')?.errors?.['minlength']) {
+                  Please write at least 10 characters
+                } @else if (requestForm.get('message')?.errors?.['maxlength']) {
+                  Please keep it under 1000 characters
+                }
+              </span>
+            </label>
+          }
+        </div>
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-semibold">Goals (up to 5)</span>
+          </label>
+          <div class="space-y-2">
+            @for (goalCtrl of goalsArray.controls; track $index) {
+              <div class="flex items-center gap-2">
+                <input
+                  type="text"
+                  class="input input-bordered w-full"
+                  [formControl]="goalCtrl"
+                  placeholder="e.g., Improve Angular skills, prepare for interviews"
+                  [id]="'goal-' + $index"
+                  autocomplete="off"
+                  aria-describedby="goal-help"
+                />
+                <button type="button" class="btn btn-ghost btn-square" (click)="removeGoal($index)" [disabled]="goalsArray.length <= 1" aria-label="Remove goal">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            }
+            <button type="button" class="btn btn-outline btn-sm" (click)="addGoal()" [disabled]="goalsArray.length >= 5" aria-label="Add another goal">Add goal</button>
+          </div>
+          <label class="label" id="goal-help"><span class="label-text-alt">Enter one goal per line</span></label>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="form-control">
+            <label class="label" for="experience-level">
+              <span class="label-text font-semibold">Experience Level</span>
+            </label>
+            <select id="experience-level" class="select select-bordered w-full" formControlName="experienceLevel">
+              <option value="beginner">🌱 Beginner</option>
+              <option value="intermediate">📈 Intermediate</option>
+              <option value="advanced">⭐ Advanced</option>
+            </select>
+            <label class="label">
+              <span class="label-text-alt text-base-content/60">Your current skill level</span>
+            </label>
+          </div>
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Meeting Frequency</span>
+            </label>
+            <select class="select select-bordered w-full" formControlName="preferredMeetingFrequency">
+              <option value="weekly">📅 Weekly</option>
+              <option value="bi-weekly">🗓️ Bi-weekly</option>
+              <option value="monthly">📆 Monthly</option>
+              <option value="as-needed">💬 As needed</option>
+            </select>
+            <label class="label">
+              <span class="label-text-alt text-base-content/60">How often you'd like to meet</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal-action pt-4 border-t border-base-300">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            (click)="onClose()"
+            [disabled]="isSubmitting()"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="requestForm.invalid || isSubmitting()"
+          >
+            @if (isSubmitting()) {
+              <span class="loading loading-spinner loading-sm"></span>
+              Sending...
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+              Send Request
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

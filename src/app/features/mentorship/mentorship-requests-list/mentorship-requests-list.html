@@ -1,0 +1,251 @@
+@let vm = viewModel$ | async;
+@let processingRequest = processingRequestState$ | async;
+
+@if (vm) {
+  <div class="space-y-6">
+    <div class="flex items-center justify-between">
+      <h2 class="text-2xl font-bold">Mentorship Requests</h2>
+      <div class="text-sm text-base-content/70">
+        {{ vm.requestCounts.all }} total requests
+      </div>
+    </div>
+
+    <div class="tabs tabs-boxed">
+      <button
+        class="tab"
+        [class.tab-active]="vm.selectedStatus === 'all'"
+        (click)="setStatusFilter('all')"
+      >
+        All ({{ vm.requestCounts.all }})
+      </button>
+      <button
+        class="tab"
+        [class.tab-active]="vm.selectedStatus === RequestStatus.Pending"
+        (click)="setStatusFilter(RequestStatus.Pending)"
+      >
+        Pending ({{ vm.requestCounts.pending }})
+      </button>
+      <button
+        class="tab"
+        [class.tab-active]="vm.selectedStatus === RequestStatus.Approved"
+        (click)="setStatusFilter(RequestStatus.Approved)"
+      >
+        Approved ({{ vm.requestCounts.approved }})
+      </button>
+      <button
+        class="tab"
+        [class.tab-active]="vm.selectedStatus === RequestStatus.Rejected"
+        (click)="setStatusFilter(RequestStatus.Rejected)"
+      >
+        Rejected ({{ vm.requestCounts.rejected }})
+      </button>
+      <button
+        class="tab"
+        [class.tab-active]="vm.selectedStatus === RequestStatus.Done"
+        (click)="setStatusFilter(RequestStatus.Done)"
+      >
+        Completed ({{ vm.requestCounts.done }})
+      </button>
+    </div>
+
+    @if (vm.error; as errorMessage) {
+      <app-error-state
+        title="Unable to load requests"
+        [message]="errorMessage"
+        [showRetry]="true"
+        retryLabel="Retry"
+        (retry)="retryLoad()"
+      />
+    } @else if (vm.loading) {
+      <app-loading-state
+        title="Loading mentorship requests"
+        message="We're fetching the most recent requests for you."
+        [showBackdrop]="true"
+      />
+    } @else if (vm.filteredRequests.length === 0) {
+      <div class="flex items-center justify-center min-h-[400px]">
+        @if (vm.allRequests.length === 0) {
+          <app-empty-state
+            iconName="inbox"
+            title="No requests found"
+            message="You haven't received any mentorship requests yet. Check back soon or invite mentees to reach out."
+          />
+        } @else {
+          <app-empty-state
+            iconName="search"
+            title="No requests in this category"
+            [message]="getEmptyFilterMessage(vm.selectedStatus)"
+            actionLabel="View all requests"
+            (action)="setStatusFilter('all')"
+          />
+        }
+      </div>
+    } @else {
+      <div class="space-y-4">
+        @for (request of vm.filteredRequests; track request.requestId) {
+        @let mentee = vm.menteeById.get(request.menteeId);
+        <div class="card border border-base-300 bg-base-100 shadow-lg">
+          <div class="card-body">
+            <div class="flex items-start justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <div class="avatar">
+                  <div class="h-12 w-12 rounded-full ring ring-primary ring-offset-2 ring-offset-base-100">
+                    @if (mentee) {
+                      <img
+                        [src]="mentee?.photoURL?.trim() || getInitialsAvatar(mentee?.displayName, { size: 48 })"
+                        [alt]="(mentee?.displayName || 'Mentee') + ' avatar'"
+                        width="48"
+                        height="48"
+                      />
+                    } @else {
+                      <div class="flex h-full w-full items-center justify-center bg-base-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                    }
+                  </div>
+                </div>
+                <div>
+                  @if (mentee) {
+                    <h3 class="text-lg font-semibold">{{ mentee?.displayName || 'Unknown mentee' }}</h3>
+                    <p class="text-sm text-base-content/70">{{ mentee?.email || 'No email' }}</p>
+                  } @else {
+                    <h3 class="text-lg font-semibold">Loading mentee...</h3>
+                    <p class="text-sm text-base-content/70">Requested {{ request.createdAt | timeAgo }}</p>
+                  }
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="badge" [class]="getStatusBadgeClass(request.status)">
+                  {{ request.status | titlecase }}
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <p class="text-sm text-base-content/60">Requested {{ request.createdAt | timeAgo }}</p>
+
+              <div>
+                <h4 class="mb-2 font-semibold">Message:</h4>
+                <p class="rounded-lg bg-base-200 p-3 text-base-content/80">
+                  {{ request.message }}
+                </p>
+              </div>
+
+              @if (request.goals && request.goals.length > 0) {
+                <div>
+                  <h4 class="mb-2 font-semibold">Goals:</h4>
+                  <div class="flex flex-wrap gap-2">
+                    @for (goal of request.goals; track $index) {
+                      <div class="badge badge-outline">{{ goal }}</div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <h4 class="mb-1 font-semibold">Experience Level:</h4>
+                  <p class="capitalize text-base-content/80">{{ request.experienceLevel }}</p>
+                </div>
+                <div>
+                  <h4 class="mb-1 font-semibold">Meeting Frequency:</h4>
+                  <p class="capitalize text-base-content/80">{{ request.preferredMeetingFrequency }}</p>
+                </div>
+              </div>
+
+              @if (request.status === RequestStatus.Rejected && request.rejectionReason) {
+                <div class="alert alert-error">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <h4 class="font-semibold">Rejection Reason:</h4>
+                    <p>{{ request.rejectionReason }}</p>
+                  </div>
+                </div>
+              }
+
+              @if (request.status === RequestStatus.Pending) {
+                <div class="card-actions justify-end">
+                  <button
+                    class="btn btn-error btn-outline"
+                    [disabled]="processingRequest === request.requestId"
+                    (click)="rejectRequest(request.requestId)"
+                  >
+                    @if (processingRequest === request.requestId) {
+                      <span class="loading loading-spinner loading-sm"></span>
+                    } @else {
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    }
+                    Reject
+                  </button>
+                  <button
+                    class="btn btn-success"
+                    [disabled]="processingRequest === request.requestId"
+                    (click)="approveRequest(request.requestId)"
+                  >
+                    @if (processingRequest === request.requestId) {
+                      <span class="loading loading-spinner loading-sm"></span>
+                    } @else {
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                    }
+                    Approve
+                  </button>
+                </div>
+              }
+
+              @if (request.status === RequestStatus.Approved) {
+                <div class="space-y-4">
+                  <div class="alert alert-success">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                      <h4 class="font-semibold">Approved!</h4>
+                      <p>This mentee can now book sessions with you through your Cal.com calendar.</p>
+                    </div>
+                  </div>
+                  <div class="card-actions justify-end">
+                    <button
+                      class="btn btn-primary"
+                      [disabled]="processingRequest === request.requestId"
+                      (click)="markAsCompleted(request.requestId)"
+                    >
+                      @if (processingRequest === request.requestId) {
+                        <span class="loading loading-spinner loading-sm"></span>
+                      } @else {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      }
+                      Mark as Done
+                    </button>
+                  </div>
+                </div>
+              }
+
+              @if (request.status === RequestStatus.Done) {
+                <div class="alert alert-info">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <h4 class="font-semibold">Mentorship Completed!</h4>
+                    <p>This mentorship has been marked as completed.</p>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+    }
+  </div>
+}
