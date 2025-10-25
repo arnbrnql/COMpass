@@ -1,0 +1,159 @@
+<div class="flex items-center justify-center min-h-screen bg-base-200 py-8">
+  <div class="card w-full max-w-md bg-base-100 shadow-xl">
+    <div class="card-body">
+      <div class="flex justify-center mb-6">
+        <div class="flex items-center gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" stroke-linecap="round" stroke-linejoin="round"/>
+            <polygon points="12,2 10,10 12,12 14,10" fill="currentColor" opacity="0.8"/>
+            <polygon points="12,22 14,14 12,12 10,14" fill="currentColor" opacity="0.3"/>
+            <line x1="12" y1="2" x2="12" y2="6" stroke-linecap="round"/>
+            <line x1="12" y1="18" x2="12" y2="22" stroke-linecap="round"/>
+            <line x1="2" y1="12" x2="6" y2="12" stroke-linecap="round"/>
+            <line x1="18" y1="12" x2="22" y2="12" stroke-linecap="round"/>
+          </svg>
+          <div>
+            <h1 class="text-3xl font-bold">COMpass</h1>
+            <p class="text-xs text-base-content/60">Find Your Way with the Right Guides</p>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="text-2xl font-bold text-center mb-2">Create Account</h2>
+      <p class="text-center text-base-content/70 mb-6">Start your mentorship journey today</p>
+
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-4">
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-semibold">Full Name</span>
+            <span class="label-text-alt text-error">Required</span>
+          </label>
+          <input
+            type="text"
+            formControlName="displayName"
+            placeholder="Enter your full name"
+            class="input input-bordered w-full"
+            [class.input-error]="registerForm.get('displayName')?.invalid && registerForm.get('displayName')?.touched"
+            autocomplete="name"
+          />
+          @if (registerForm.get('displayName')?.invalid && registerForm.get('displayName')?.touched) {
+            <label class="label">
+              <span class="label-text-alt text-error">Full name is required</span>
+            </label>
+          }
+        </div>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-semibold">Email</span>
+            <span class="label-text-alt text-error">Required</span>
+          </label>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="your@email.com"
+            class="input input-bordered w-full"
+            [class.input-error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+            autocomplete="email"
+          />
+          @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
+            <label class="label">
+              <span class="label-text-alt text-error">Please enter a valid email address</span>
+            </label>
+          }
+        </div>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-semibold">Password</span>
+            <span class="label-text-alt text-error">Required</span>
+          </label>
+          <input
+            type="password"
+            formControlName="password"
+            placeholder="Minimum 6 characters"
+            class="input input-bordered w-full"
+            [class.input-error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+            autocomplete="new-password"
+          />
+          @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+            <label class="label">
+              <span class="label-text-alt text-error">Password must be at least 6 characters</span>
+            </label>
+          }
+        </div>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-semibold">I want to...</span>
+            <span class="label-text-alt text-error">Required</span>
+          </label>
+          <div class="flex flex-col space-y-3">
+            <label class="flex items-center p-3 rounded-lg border-2 border-base-300 cursor-pointer hover:bg-base-200 hover:border-primary transition-all duration-200" [class.border-primary]="registerForm.get('role')?.value === 'mentee'" [class.bg-primary/5]="registerForm.get('role')?.value === 'mentee'">
+              <input type="radio" formControlName="role" value="mentee" class="radio radio-primary" />
+              <div class="ml-3 flex-1">
+                <div class="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-info" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <span class="font-semibold">Find a Mentor</span>
+                </div>
+                <p class="text-sm text-base-content/60 ml-7">Connect with experienced mentors to guide you</p>
+              </div>
+            </label>
+            <label class="flex items-center p-3 rounded-lg border-2 border-base-300 cursor-pointer hover:bg-base-200 hover:border-primary transition-all duration-200" [class.border-primary]="registerForm.get('role')?.value === 'mentor'" [class.bg-primary/5]="registerForm.get('role')?.value === 'mentor'">
+              <input type="radio" formControlName="role" value="mentor" class="radio radio-primary" />
+              <div class="ml-3 flex-1">
+                <div class="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                  <span class="font-semibold">Become a Mentor</span>
+                </div>
+                <p class="text-sm text-base-content/60 ml-7">Share your expertise and help others grow</p>
+              </div>
+            </label>
+            <label class="flex items-center p-3 rounded-lg border-2 border-base-300 cursor-pointer hover:bg-base-200 hover:border-primary transition-all duration-200" [class.border-primary]="registerForm.get('role')?.value === 'both'" [class.bg-primary/5]="registerForm.get('role')?.value === 'both'">
+              <input type="radio" formControlName="role" value="both" class="radio radio-primary" />
+              <div class="ml-3 flex-1">
+                <div class="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  <span class="font-semibold">Both Roles</span>
+                </div>
+                <p class="text-sm text-base-content/60 ml-7">Mentor others while learning from experienced guides</p>
+              </div>
+            </label>
+          </div>
+        </div>
+        @if (errorMessage()) {
+          <div class="alert alert-error text-sm">
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+
+        <div class="card-actions justify-center">
+          <button type="submit" class="btn btn-primary w-full" [disabled]="isLoading()">
+            @if (isLoading()) {
+              <span class="loading loading-spinner"></span>
+            }
+            Create Account
+          </button>
+        </div>
+      </form>
+
+      <div class="divider">Already have an account?</div>
+
+      <a routerLink="/auth/login" class="btn btn-outline w-full">
+        Log In
+      </a>
+    </div>
+  </div>
+
+  <app-cal-com-setup-guide
+    [isModalOpen]="showCalComSetup()"
+    (closeModal)="onCalComSetupClose()"
+    (setupComplete)="onCalComSetupComplete($event)"
+  />
+</div>
