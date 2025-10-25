@@ -59,39 +59,26 @@ function sanitizeForFirestore<T>(value: T): T {
   return value;
 }
 
-/**
- * Firestore-backed user profile repository with caching.
- */
 @Injectable()
 export class FirebaseUserRepository extends BaseRepository implements UserRepository {
   private firestore: Firestore = inject(Firestore);
   private readonly queryTimeoutMs = 15000;
-  private readonly profileCache = new Map<string, Observable<User | null>>();
 
   watchProfile(uid: string): Observable<User | null> {
     if (!uid || uid.trim().length === 0) {
       return of(null);
     }
 
-    if (this.profileCache.has(uid)) {
-      return this.profileCache.get(uid)!;
-    }
-
-    const profile$ = this.fromObservable(() =>
+    return this.fromObservable(() =>
       docData(doc(this.firestore, `${FIREBASE_COLLECTIONS.USERS}/${uid}`)).pipe(
         timeout(this.queryTimeoutMs),
         map(user => toUser(uid, user as Record<string, unknown>)),
         retry({ count: 2, delay: 1000 }),
         catchError((error: FirestoreError) => {
-          this.profileCache.delete(uid);
           return throwError(() => this.mapFirestoreError(error));
-        }),
-        shareReplay({ bufferSize: 1, refCount: true })
+        })
       )
     );
-
-    this.profileCache.set(uid, profile$);
-    return profile$;
   }
 
   fetchProfile(uid: string): Observable<User | null> {
@@ -125,7 +112,6 @@ export class FirebaseUserRepository extends BaseRepository implements UserReposi
     return this.fromPromise(async () => {
       try {
         await setDoc(userDocRef, profileData);
-        this.profileCache.delete(props.uid);
       } catch (error) {
         console.error('[FirebaseUserRepository] Error creating profile:', error);
         throw this.mapFirestoreError(error as FirestoreError);
@@ -157,7 +143,6 @@ export class FirebaseUserRepository extends BaseRepository implements UserReposi
     return this.fromPromise(async () => {
       try {
         await updateDoc(userDocRef, updateData);
-        this.profileCache.delete(uid);
       } catch (error) {
         throw this.mapFirestoreError(error as FirestoreError);
       }
@@ -178,7 +163,6 @@ export class FirebaseUserRepository extends BaseRepository implements UserReposi
     return this.fromPromise(async () => {
       try {
         await deleteDoc(userDocRef);
-        this.profileCache.delete(uid);
       } catch (error) {
         throw this.mapFirestoreError(error as FirestoreError);
       }
@@ -265,7 +249,6 @@ export class FirebaseUserRepository extends BaseRepository implements UserReposi
             ...update.data,
             updatedAt: serverTimestamp(),
           });
-          this.profileCache.delete(update.uid);
         }
 
         await writeBatchOp.commit();
@@ -291,17 +274,6 @@ export class FirebaseUserRepository extends BaseRepository implements UserReposi
     }
   }
 
-  /**
-   * Clear the profile cache
-   * Useful for testing or when forcing a refresh
-   */
-  clearCache(uid?: string): void {
-    if (uid) {
-      this.profileCache.delete(uid);
-    } else {
-      this.profileCache.clear();
-    }
-  }
 
   /**
    * Map Firestore errors to user-friendly messages
