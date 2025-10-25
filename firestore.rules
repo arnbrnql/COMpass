@@ -1,0 +1,132 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // By default, deny all reads and writes
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // USERS collection
+    // - Allow any authenticated user to read user profiles (for the discover page)
+    // - Allow a user to create and update their own profile document
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // SESSIONS collection
+    // - Allow a user to read sessions where they are either the mentee or mentor
+    // - Allow creation if the user is the mentee or mentor with proper validation
+    // - Allow updates only by participants with validation
+    // - Prevent deletion of sessions (use status updates instead)
+    match /sessions/{sessionId} {
+      // Read access for participants only
+      allow read: if request.auth != null &&
+        (request.auth.uid == resource.data.menteeId || request.auth.uid == resource.data.mentorId);
+
+      // Create access with validation
+      allow create: if request.auth != null &&
+        // User must be either the mentee or mentor
+        (request.auth.uid == request.resource.data.menteeId || request.auth.uid == request.resource.data.mentorId) &&
+        // Required fields must be present
+        request.resource.data.keys().hasAll(['mentorId', 'menteeId', 'startTime', 'endTime', 'status']) &&
+        // Status must be valid for new sessions
+        request.resource.data.status in ['pending', 'scheduled'] &&
+        // Start time must be in the future
+        request.resource.data.startTime > request.time &&
+        // End time must be after start time
+        request.resource.data.endTime > request.resource.data.startTime &&
+        // Meeting link must be a string if provided
+        (!request.resource.data.keys().hasAny(['meetingLink']) || request.resource.data.meetingLink is string);
+
+      // Update access with validation
+      allow update: if request.auth != null &&
+        // User must be a participant
+        (request.auth.uid == resource.data.menteeId || request.auth.uid == resource.data.mentorId) &&
+        // Prevent changing participant IDs
+        request.resource.data.menteeId == resource.data.menteeId &&
+        request.resource.data.mentorId == resource.data.mentorId &&
+        // Status must be valid
+        request.resource.data.status in ['pending', 'scheduled', 'cancelled', 'completed', 'no-show'];
+
+      // Explicitly deny delete - use status updates instead
+      allow delete: if false;
+    }
+
+    // MENTORSHIP REQUESTS collection
+    // - Allow mentees to create requests
+    // - Allow mentors to read requests sent to them
+    // - Allow mentees to read their own requests
+    // - Allow mentors to update request status (approve/reject/done) and manage calendar access lock/unlock
+    // - Allow mentees to set bookingUrl only when calendar is unlocked (approved) and no other mutation
+    // - Feedback removed from MVP scope
+    // - Prevent deletion of requests (maintain audit trail)
+    match /mentorshipRequests/{requestId} {
+      // Read access for mentee and mentor
+      allow read: if request.auth != null &&
+        (request.auth.uid == resource.data.menteeId || request.auth.uid == resource.data.mentorId);
+
+      // Create access for mentees only
+      allow create: if request.auth != null &&
+        // User must be the mentee
+        request.auth.uid == request.resource.data.menteeId &&
+        // Required fields must be present (simplified)
+        request.resource.data.keys().hasAll(['mentorId', 'menteeId', 'status', 'message']) &&
+        // Status must be pending for new requests
+        request.resource.data.status == 'pending' &&
+        // Message must be a non-empty string
+        request.resource.data.message is string && request.resource.data.message.size() > 0;
+
+      // Updates
+      allow update: if request.auth != null && (
+        // Mentor transitions (approve/reject/done) with calendar lock management
+        (
+          request.auth.uid == resource.data.mentorId &&
+          // Prevent changing participant IDs and message body
+          request.resource.data.menteeId == resource.data.menteeId &&
+          request.resource.data.mentorId == resource.data.mentorId &&
+          request.resource.data.message == resource.data.message &&
+          // Valid status transitions only
+          (
+            // pending -> approved|rejected
+            (resource.data.status == 'pending' && request.resource.data.status in ['approved', 'rejected']) ||
+            // approved -> done
+            (resource.data.status == 'approved' && request.resource.data.status == 'done') ||
+            // allow idempotent write of same status
+            (request.resource.data.status == resource.data.status)
+          ) &&
+          // Calendar lock rules
+          (
+            // If status is approved, require calendarAccess.isUnlocked to be true
+            (request.resource.data.status != 'approved' || (
+              request.resource.data.keys().hasAny(['calendarAccess']) &&
+              request.resource.data.calendarAccess.isUnlocked == true
+            )) &&
+            // If status is done, require calendarAccess.isUnlocked to be false
+            (request.resource.data.status != 'done' || (
+              request.resource.data.keys().hasAny(['calendarAccess']) &&
+              request.resource.data.calendarAccess.isUnlocked == false
+            ))
+          )
+        ) ||
+        // Mentee may set bookingUrl only (no other field changes) when approved and calendar unlocked
+        (
+          request.auth.uid == resource.data.menteeId &&
+          resource.data.status == 'approved' &&
+          resource.data.calendarAccess.isUnlocked == true &&
+          // bookingUrl must be a string and only field modified besides updatedAt
+          request.resource.data.keys().hasAll(resource.data.keys().union(['bookingUrl', 'updatedAt'])) &&
+          request.resource.data.diff(resource.data).changedKeys().subsetOf(['bookingUrl', 'updatedAt']) &&
+          request.resource.data.bookingUrl is string
+        )
+      );
+
+      // Explicitly deny delete - maintain audit trail
+      allow delete: if false;
+    }
+
+    // Mentorship Feedbacks collection removed
+  }
+}
