@@ -39,7 +39,7 @@ export default class ProfileEdit implements OnInit {
     bio: ['', Validators.maxLength(500)],
     mentorProfile: this.formBuilder.group({
       expertise: [''],
-      calUsername: ['', Validators.required], // Required for mentors
+      calUsername: [''],
     }),
     menteeProfile: this.formBuilder.group({
       goals: [''],
@@ -68,14 +68,24 @@ export default class ProfileEdit implements OnInit {
   }
 
   async onSubmit() {
+    const user = this.currentUser();
+    if (!user) return;
+
+    if (user.isMentor()) {
+      const calUsername = this.profileForm.get('mentorProfile.calUsername')?.value?.trim();
+      if (!calUsername) {
+        this.profileForm.get('mentorProfile.calUsername')?.setErrors({ required: true });
+        this.profileForm.get('mentorProfile.calUsername')?.markAsTouched();
+        return;
+      }
+    }
+
     if (this.profileForm.invalid) return;
 
     this.isSubmitting.set(true);
     this.successMessage.set(null);
 
     const formValue = this.profileForm.getRawValue();
-    const user = this.currentUser();
-    if (!user) return;
 
     const displayName = formValue.displayName?.trim() || user.displayName;
     const bio = formValue.bio?.trim() || '';

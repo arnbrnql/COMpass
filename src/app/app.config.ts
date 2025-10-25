@@ -43,9 +43,7 @@ const firebaseProviders = [
       FIREBASE_APPCHECK_DEBUG_TOKEN?: boolean | string;
     };
 
-    if (isDevMode()) {
-      globalRef.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-    }
+    globalRef.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
 
     const provider = new ReCaptchaEnterpriseProvider(environment.recaptchaEnterpriseKey);
     return initializeAppCheck(undefined, { provider, isTokenAutoRefreshEnabled: true });
