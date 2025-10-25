@@ -2,9 +2,13 @@
 
 A mentorship platform built with Angular 20 and Firebase. Connects mentees with mentors through real-time requests and integrated Cal.com scheduling.
 
+## 🌐 Live Demo
+
+**[https://compass-cb7cd.web.app](https://compass-cb7cd.web.app)**
+
 > **⚠️ Work In Progress**
 > 
-> This project is currently under active development. Many features are incomplete or experimental. Use in production at your own risk.
+> This project is currently under active development. Many features are incomplete or experimental. The demo uses a live Firebase backend - please be respectful with test data.
 
 ## Features
 
